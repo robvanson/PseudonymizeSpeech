@@ -11,14 +11,14 @@ form Select recordings
 	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/M56H/M56H1FT1.aifc
 	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/M58D/M58D1FT1.aifc
 	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/M66O/M66O1FT1.aifc
-	sentence Source /Users/rob/surfdrive/Corpora/North Wind and the Sun DataShare.is.ed.ac.uk/En/NW084-*.wav
-	#sentence Source /Users/rob/surfdrive/Corpora/North Wind and the Sun IFAcorpus/
+	#sentence Source /Users/rob/surfdrive/Corpora/North Wind and the Sun DataShare.is.ed.ac.uk/En/NW084-*.wav
+	sentence Source /Users/rob/surfdrive/Corpora/North Wind and the Sun IFAcorpus/
 	sentence Reference -
 	sentence Target_Phi_(Hz) 500,525;550;575,595
 	sentence Target_Pitch_(Hz) 110,140,160,185,210
 	sentence Target_Rate_(Syll/sec) 4.0
-	sentence Target_directory /Users/rob/Desktop/NWSpseudonymized
-	#sentence Target_directory /Users/rob/Desktop/NWSpseudonymized_IFAcorpus
+	#sentence Target_directory /Users/rob/Desktop/NWSpseudonymized
+	sentence Target_directory /Users/rob/Desktop/NWSpseudonymized_IFAcorpus
 endform
 
 # Modify formant bands individually
@@ -107,9 +107,14 @@ for .f to .numFiles
 		.target = createPseudonymousSpeech.target
 		.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.\1", 0)
 		if target_directory$ <> ""
-			if fileReadable(target_directory$+"/"+.targetFilename$)
-				.targetFilename$ = replace_regex$(.targetFilename$, "(\.[^\.]+)$", "-1\1", 0)
-			endif
+			.k = 0
+			.appx$ = ""
+			while fileReadable(target_directory$+"/"+.targetFilename$)
+				.prevAppx$ = .appx$
+				.k += 1
+				.appx$ = "_'.k'"
+				.targetFilename$ = replace_regex$(.targetFilename$, .prevAppx$+"(\.[^\.]+)$", .appx$+"\1", 0)
+			endwhile
 			nowarn Save as WAV file: target_directory$+"/"+.targetFilename$
 		endif
 		appendInfoLine: .directory$+"/"+.targetFilename$
@@ -210,7 +215,7 @@ procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .targe
 	Rename: "IntermediatePseudonymizedF0"
 	
 	selectObject: .intermediateSoundF0
-	.f0Filtered = Filter (pass Hann band): 0, .f0Band*.phi, 100
+	.f0Filtered = Filter (pass Hann band): 0, .f0Band*.target_Phi, 100
 	
 	selectObject: .intermediateSoundF0
 	Remove
@@ -224,7 +229,7 @@ procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .targe
 		Rename: "IntermediatePseudonymizedF2"
 		
 		selectObject: .intermediateSoundF2
-		.f2Filtered = Filter (pass Hann band): 2*.phi, 4*.phi, 100
+		.f2Filtered = Filter (pass Hann band): 2*.target_Phi, 4*.target_Phi, 100
 		
 		selectObject: .intermediateSoundF2
 		Remove
@@ -240,7 +245,7 @@ procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .targe
 		Rename: "IntermediatePseudonymizedF3"
 
 		selectObject: .intermediateSoundF3
-		.f3Filtered = Filter (pass Hann band): 4*.phi, 6*.phi, 100
+		.f3Filtered = Filter (pass Hann band): 4*.target_Phi, 6*.target_Phi, 100
 		
 		selectObject: .intermediateSoundF3
 		Remove
@@ -255,7 +260,7 @@ procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .targe
 	Rename: "IntermediatePseudonymizedF4"
 	
 	selectObject: .intermediateSoundF4
-	.f4Filtered = Filter (pass Hann band): 6*.phi, 8*.phi, 100
+	.f4Filtered = Filter (pass Hann band): 6*.target_Phi, 8*.target_Phi, 100
 	
 	selectObject: .intermediateSoundF4
 	Remove
@@ -267,7 +272,7 @@ procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .targe
 	Rename: "IntermediatePseudonymizedF5"
 	
 	selectObject: .intermediateSoundF5
-	.f5Filtered = Filter (pass Hann band): 8*.phi, 20000, 100
+	.f5Filtered = Filter (pass Hann band): 8*.target_Phi, 20000, 100
 	
 	selectObject: .intermediateSoundF5
 	Remove
@@ -276,7 +281,7 @@ procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .targe
 	#
 	# Create filtered speech
 	selectObject: .intermediateSound
-	.f1Filtered = Filter (pass Hann band): .f0Band*.phi, .lpBand*.phi, 100
+	.f1Filtered = Filter (pass Hann band): .f0Band*.target_Phi, .lpBand*.target_Phi, 100
 		
 	selectObject: .intermediateSound
 	Remove
