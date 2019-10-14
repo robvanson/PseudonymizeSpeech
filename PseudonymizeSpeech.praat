@@ -30,7 +30,7 @@ form Select recordings
 	sentence Target_Pitch_(Hz) 120
 	sentence Target_Rate_(Syll/sec) 3.8
 	sentence Target_Directory /Users/rob/Desktop/NWSpseudonymized_IFAcorpus/AudioFiles
-	boolean Remove_pauses 0
+	boolean Remove_pauses 1
 endform
 
 # Modify formant bands individually
@@ -218,10 +218,10 @@ for .control to .numControlLines
 		
 		# Remove pauses if desired
 		if remove_pauses
-			@remove_pauses: .sound
-			selectObject: .sound
+			@remove_pauses: .sourceSound
+			selectObject: .sourceSound
 			Remove
-			.sound = remove_pauses.newSound
+			.sourceSound = remove_pauses.newSound
 		endif
 	
 		currentRefName$ = currentReference$
@@ -551,6 +551,7 @@ endproc
 
 procedure remove_pauses .sound
 	.newSound = -1
+	.margin = 0.01
 	selectObject: .sound
 	.duration = Get total duration
 	.pauzes = To TextGrid (silences): 90, 0, -30, 0.1, 0.05, "", "sounding"
@@ -561,11 +562,11 @@ procedure remove_pauses .sound
 		if .label$ = "sounding"
 			.start = Get start time of interval: 1, .i
 			.end = Get end time of interval: 1, .i
-			.start -= margin
+			.start -= .margin
 			if .start < 0
 				.start = 0
 			endif
-			.end += margin
+			.end += .margin
 			if .end > .duration
 				.end = .duration
 			endif
@@ -583,6 +584,8 @@ procedure remove_pauses .sound
 			endif
 		endif
 	endfor
+	selectObject: .pauzes
+	Remove
 	
 	# Handle No-new sound file
 	if .newSound <= 0
