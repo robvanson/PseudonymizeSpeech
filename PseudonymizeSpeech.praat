@@ -1,24 +1,36 @@
+#! praat
+#
+# Copyright: 2019, R.J.J.H. van Son and the Netherlands Cancer Institute
+# License: GNU GPL v2 or later
+# email: r.j.j.h.vanson@gmail.com, r.v.son@nki.nl
+# 
+#     VowelTriangle.praat: Praat script to practice vowel pronunciation 
+#     
+#     Copyright (C) 2017  R.J.J.H. van Son and the Netherlands Cancer Institute
+# 
+#     This program is free software; you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation; either version 2 of the License, or
+#     (at your option) any later version.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program; if not, write to the Free Software
+#     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+# 
 
 form Select recordings
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/F20N/F20N1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/F24I/F24I1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/F28G/F28G1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/F40L/F40L1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/F60E/F60E1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/F40L/F40L1VI8.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/M15R/M15R1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/M40K/M40K1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/M56H/M56H1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/M58D/M58D1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/IFAcorpus/chunks/M66O/M66O1FT1.aifc
-	#sentence Source /Users/rob/surfdrive/Corpora/North Wind and the Sun DataShare.is.ed.ac.uk/En/NW084-*.wav
-	sentence Source /Users/rob/surfdrive/Corpora/North Wind and the Sun IFAcorpus/
-	sentence Reference -
-	sentence Target_Phi_(Hz) 500,525;550;575,595
-	sentence Target_Pitch_(Hz) 110,140,160,185,210
-	sentence Target_Rate_(Syll/sec) 4.0
-	#sentence Target_directory /Users/rob/Desktop/NWSpseudonymized
-	sentence Target_directory /Users/rob/Desktop/NWSpseudonymized_IFAcorpus
+	sentence Source /Users/rob/Desktop/NWSpseudonymized_IFAcorpus/IFAcorpusFT1Pseudonymization.tsv
+	sentence Reference /Users/rob/Desktop/NWSpseudonymized_IFAcorpus/IFAcorpus_FT_SpeakerData.tsv
+	sentence Target_Phi_(Hz) 500
+	sentence Target_Pitch_(Hz) 120
+	sentence Target_Rate_(Syll/sec) 3.8
+	sentence Target_Directory /Users/rob/Desktop/NWSpseudonymized_IFAcorpus/AudioFiles
+	boolean Remove_pauses 0
 endform
 
 # Modify formant bands individually
@@ -29,149 +41,335 @@ modifyF4 = 1
 modifyF5 = 1
 
 debugON = 1
+# If this name is <> "", save the table
+saveReferenceTableName$ = "/Users/rob/Desktop/SpeakerDataTable.tsv"
 call IntitalizeFormantSpace
-.target_PhiList [1] = -1
-.target_PitchList [1] = -1
-.target_RateList [1] = -1
+speakerDataTable = Create Table with column names: "SpeakerData", 1, "Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Duration"
 
-if index_regex(target_Phi$, "[;,]")
-	.i = 1
-	.phiTargets$ = target_Phi$
-	.pitchTargets$ = target_Pitch$
-	.rateTargets$ = target_Rate$
-	while .phiTargets$ <> ""
-		# Phi
-		.current = extractNumber(.phiTargets$, "")
-		.target_PhiList [.i] = .current
-		.phiTargets$ = replace_regex$(.phiTargets$, "^[0-9\.]+[,;]?", "", 0)
-		# Pitch
-		.current = .target_PitchList [max(.i - 1, 1)]
-		if .pitchTargets$ <> ""
-			.current = extractNumber(.pitchTargets$, "")
+# The Source input contains a control table
+controlTable = -1
+if index_regex(source$, "\.(tsv|csv)$")
+	# The source file is a table
+	if index_regex(source$, "\.tsv$")
+		controlTable = Read Table from tab-separated file: source$
+	else
+		controlTable = Read from file: source$
+	endif
+	# Complete columns
+	if controlTable > 0
+		selectObject: controlTable
+		Rename: "Control_Table"
+		controlSource = Get column index: "Source"
+		if controlSource <= 0
+			# Column is invalid, stop
+			Remove
+			controlSource = -1
+			exitScript: "Source Table does not contain a Source column: ", source$
 		endif
-		.target_PitchList [.i] = .current
-		.pitchTargets$ = replace_regex$(.pitchTargets$, "^[0-9\.]+[,;]?", "", 0)
-		# Rate
-		.current = .target_RateList [max(.i - 1, 1)]
-		if .rateTargets$ <> ""
-			.current = extractNumber(.rateTargets$, "")
+		controlReference = Get column index: "Reference"
+		if controlReference <= 0
+			controlReference = 2
+			Insert column: controlReference, "Reference"
 		endif
-		.target_RateList [.i] = .current
-		.rateTargets$ = replace_regex$(.rateTargets$, "^[0-9\.]+[,;]?", "", 0)
-		# Next
-		.i += 1
-	endwhile
-	.numTargets = .i - 1
+		controlTarget_Phi = Get column index: "Target_Phi"
+		if controlTarget_Phi <= 0
+			controlTarget_Phi = 3
+			Insert column: controlTarget_Phi, "Target_Phi"
+		endif
+		controlTarget_Pitch = Get column index: "Target_Pitch"
+		if controlTarget_Pitch <= 0
+			controlTarget_Pitch = 4
+			Insert column: controlTarget_Pitch, "Target_Pitch"
+		endif
+		controlTarget_Rate = Get column index: "Target_Rate"
+		if controlTarget_Rate <= 0
+			controlTarget_Rate = 5
+			Insert column: controlTarget_Rate, "Target_Rate"
+		endif
+		controlTarget_Directory = Get column index: "Target_Directory"
+		if controlTarget_Directory <= 0
+			controlTarget_Directory = 6
+			Insert column: controlTarget_Directory, "Target_Directory"
+		endif
+	endif
 else
-	.target_PhiList[1] = target_Phi
-	.target_PitchList[1] = target_Pitch
-	.target_RateList[1] = target_Rate
-	.numTargets = 1
+	controlTable = Create Table with column names: "Control_Table", 1, "Source Reference Target_Phi Target_Pitch Target_Rate Target_Directory"
+	controlSource = -1
+	controlReference = 2
+	controlTarget_Phi = 3
+	controlTarget_Pitch = 4
+	controlTarget_Rate = 5
+	controlTarget_Directory = 6
 endif
 
-.wildcard$ = "*"
-if index(source$, "*") > 0 or endsWith(source$, "/")
-	.wildcard$ = ""
-endif
-.sourceList = Create Strings as file list: "SourceList", source$+.wildcard$
-.numFiles = Get number of strings
-.directory$ = replace_regex$(source$, "/[^/]+$", "", 0)
-
-for .f to .numFiles
-	selectObject: .sourceList
-	.fileName$ = Get string: .f
-	appendInfoLine: .directory$+"/"+.fileName$
-	.tmp = Read from file: .directory$+"/"+.fileName$
-	.nameSource$ = selected$()
-	.sourceSound = Convert to mono
-	Rename: .nameSource$
-	selectObject: .tmp
-	Remove
-
-	if reference$ = "-"
-		selectObject: .sourceSound
-		.refRecording = Copy: "Reference"
+if index_regex(reference$, "\.(tsv|csv)$")
+	# The reference file is a table
+	if index_regex(reference$, "\.tsv$")
+		.tmp = Read Table from tab-separated file: reference$
 	else
 		.tmp = Read from file: reference$
-		.refRecording = Convert to mono
-		Rename: "Reference"
+	endif
+	if .tmp > 0
+		selectObject: speakerDataTable
+		Remove
+		speakerDataTable = .tmp
+		.tmp = 0
+	endif
+endif
+
+if controlTable > 0
+	selectObject: controlTable
+	.numControlLines = Get number of rows
+else
+	exitScript: "Source Table is not found and could not be created"
+endif
+
+for .control to .numControlLines
+	.currentTarget_PhiList [1] = -1
+	.currentTarget_PitchList [1] = -1
+	.currentTarget_RateList [1] = -1
+	# Read values
+	selectObject: controlTable
+	.tmp$ = Get value: .control, "Source"
+	currentSource$ = source$
+	if .tmp$ <> "" and .tmp$ <> "-"
+		currentSource$ = .tmp$;
+	endif
+	.tmp$ = Get value: .control, "Reference"
+	currentReference$ = reference$
+	if .tmp$ <> "" and .tmp$ <> "-"
+		currentReference$ = .tmp$;
+	endif
+	.tmp$ = Get value: .control, "Target_Phi"
+	currentTarget_Phi$ = target_Phi$
+	if .tmp$ <> "" and .tmp$ <> "-"
+		currentTarget_Phi$ = .tmp$;
+	endif
+	.tmp$ = Get value: .control, "Target_Pitch"
+	currentTarget_Pitch$ = target_Pitch$
+	if .tmp$ <> "" and .tmp$ <> "-"
+		currentTarget_Pitch$ = .tmp$;
+	endif
+	.tmp$ = Get value: .control, "Target_Rate"
+	currentTarget_Rate$ = target_Rate$
+	if .tmp$ <> "" and .tmp$ <> "-"
+		currentTarget_Rate$ = .tmp$;
+	endif
+	.tmp$ = Get value: .control, "Target_Directory"
+	currentTarget_Directory$ = target_Directory$
+	if .tmp$ <> "" and .tmp$ <> "-"
+		currentTarget_Directory$ = .tmp$;
+	endif
+	
+	# Handle source/reference files
+	.wildcard$ = "*"
+	if index(currentSource$, "*") > 0 or endsWith(currentSource$, "/")
+		.wildcard$ = ""
+	endif
+	.sourceList = Create Strings as file list: "SourceList", currentSource$+.wildcard$
+	.numSourceFiles = Get number of strings
+	.sourceDirectory$ = replace_regex$(currentSource$, "/[^/]+$", "", 0)
+	
+	if index_regex(currentTarget_Phi$, "[;,]")
+		.i = 1
+		.phiTargets$ = currentTarget_Phi$
+		.pitchTargets$ = currentTarget_Pitch$
+		.rateTargets$ = currentTarget_Rate$
+		while .phiTargets$ <> ""
+			# Phi
+			.current = extractNumber(.phiTargets$, "")
+			.currentTarget_PhiList [.i] = .current
+			.phiTargets$ = replace_regex$(.phiTargets$, "^[0-9\.]+[,;]?", "", 0)
+			# Pitch
+			.current = .currentTarget_PitchList [max(.i - 1, 1)]
+			if .pitchTargets$ <> ""
+				.current = extractNumber(.pitchTargets$, "")
+			endif
+			.currentTarget_PitchList [.i] = .current
+			.pitchTargets$ = replace_regex$(.pitchTargets$, "^[0-9\.]+[,;]?", "", 0)
+			# Rate
+			.current = .currentTarget_RateList [max(.i - 1, 1)]
+			if .rateTargets$ <> ""
+				.current = extractNumber(.rateTargets$, "")
+			endif
+			.currentTarget_RateList [.i] = .current
+			.rateTargets$ = replace_regex$(.rateTargets$, "^[0-9\.]+[,;]?", "", 0)
+			# Next
+			.i += 1
+		endwhile
+		.numTargets = .i - 1
+	else
+		.currentTarget_PhiList[1] = 'currentTarget_Phi$'
+		.currentTarget_PitchList[1] = 'currentTarget_Pitch$'
+		.currentTarget_RateList[1] = 'currentTarget_Rate$'
+		.numTargets = 1
+	endif
+	
+	for .f to .numSourceFiles
+		selectObject: .sourceList
+		.fileName$ = Get string: .f
+		appendInfoLine: .sourceDirectory$+"/"+.fileName$
+		.tmp = Read from file: .sourceDirectory$+"/"+.fileName$
+		.nameSource$ = selected$()
+		.sourceSound = Convert to mono
+		Rename: .nameSource$
 		selectObject: .tmp
 		Remove
-	endif
-	
-	for .i to .numTargets
-		.current_Phi = .target_PhiList[.i]
-		.current_Pitch = .target_PitchList[.i]
-		.current_Rate = .target_RateList[.i]
-		@createPseudonymousSpeech: .sourceSound, .refRecording, .current_Phi, .current_Pitch, .current_Rate
-		.target = createPseudonymousSpeech.target
-		.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.\1", 0)
-		if target_directory$ <> ""
-			.k = 0
-			.appx$ = ""
-			while fileReadable(target_directory$+"/"+.targetFilename$)
-				.prevAppx$ = .appx$
-				.k += 1
-				.appx$ = "_'.k'"
-				.targetFilename$ = replace_regex$(.targetFilename$, .prevAppx$+"(\.[^\.]+)$", .appx$+"\1", 0)
-			endwhile
-			nowarn Save as WAV file: target_directory$+"/"+.targetFilename$
+		
+		# Remove pauses if desired
+		if remove_pauses
+			@remove_pauses: .sound
+			selectObject: .sound
+			Remove
+			.sound = remove_pauses.newSound
 		endif
-		appendInfoLine: .directory$+"/"+.targetFilename$
-		selectObject: .target
+	
+		currentRefName$ = currentReference$
+		if currentReference$ = "-"
+			currentRefName$ = currentSource$
+		endif
+		selectObject: speakerDataTable
+		.dataRow = Search column: "Reference", currentRefName$
+		if .dataRow <= 0
+			if currentReference$ = "-"
+				selectObject: .sourceSound
+				.refRecording = Copy: "Reference"
+			else
+				.wildcard$ = "*"
+				if index(currentReference$, "*") > 0 or endsWith(currentReference$, "/")
+					.wildcard$ = ""
+				endif
+				.referenceList = Create Strings as file list: "ReferenceList", currentReference$+.wildcard$
+				.refDirectory$ = replace_regex$(currentReference$, "[\\/][^\\/]+$", "", 0)
+				.numRefFiles = Get number of strings
+				.tmpList [1] = -1
+				for .r to .numRefFiles
+					selectObject: .referenceList
+					.tmp$ = Get string: .r
+					.tmpList [.r] = Read from file: .refDirectory$ + "/" + .tmp$
+				endfor
+				selectObject: .tmpList [1]
+				if .numRefFiles > 1
+					for .r from 2 to .numRefFiles
+						plusObject: .tmpList [.r]
+					endfor
+				endif
+				.tmp = Concatenate
+				.refRecording = Convert to mono
+				Rename: "Reference"
+				selectObject: .referenceList, .tmp
+				for .r from 1 to .numRefFiles
+					plusObject: .tmpList [.r]
+				endfor
+				Remove
+			endif
+			
+			# Calculate speaker characteristics
+			# Get spreaker characteristics from the reference recording
+			call vocalTractAndSpeakerMeasures .refRecording
+			.medianPitch = vocalTractAndSpeakerMeasures.medianPitch
+			.phi = vocalTractAndSpeakerMeasures.phi
+			.phi2 = vocalTractAndSpeakerMeasures.phi2
+			.phi3 = vocalTractAndSpeakerMeasures.phi3
+			.phi4 = vocalTractAndSpeakerMeasures.phi4
+			.phi5 = vocalTractAndSpeakerMeasures.phi5
+			.referenceArtRate = vocalTractAndSpeakerMeasures.artRate
+			.duration = vocalTractAndSpeakerMeasures.duration
+			# Add to table
+			selectObject: speakerDataTable
+			.dataRow = Get number of rows
+			# Add empty row
+			Append row
+			selectObject: speakerDataTable
+			Set string value: .dataRow, "Reference", currentRefName$
+			Set numeric value: .dataRow, "MedianPitch", .medianPitch
+			Set numeric value: .dataRow, "Phi", .phi
+			Set numeric value: .dataRow, "Phi2", .phi2
+			Set numeric value: .dataRow, "Phi3", .phi3
+			Set numeric value: .dataRow, "Phi4", .phi4
+			Set numeric value: .dataRow, "Phi5", .phi5
+			Set numeric value: .dataRow, "ArtRate", .referenceArtRate
+			Set numeric value: .dataRow, "Duration", .duration
+			
+			selectObject: .refRecording
+			Remove
+		endif
+		selectObject: speakerDataTable
+		.currentSpeakerData ["MedianPitch"] = Get value: .dataRow, "MedianPitch"
+		.currentSpeakerData ["Phi"] = Get value: .dataRow, "Phi"
+		.currentSpeakerData ["Phi2"] = Get value: .dataRow, "Phi2"
+		.currentSpeakerData ["Phi3"] = Get value: .dataRow, "Phi3"
+		.currentSpeakerData ["Phi4"] = Get value: .dataRow, "Phi4"
+		.currentSpeakerData ["Phi5"] = Get value: .dataRow, "Phi5"
+		.currentSpeakerData ["ArtRate"] = Get value: .dataRow, "ArtRate"
+		
+		for .i to .numTargets
+			.current_Phi = .currentTarget_PhiList[.i]
+			.current_Pitch = .currentTarget_PitchList[.i]
+			.current_Rate = .currentTarget_RateList[.i]
+			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate
+			.target = createPseudonymousSpeech.target
+			.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.wav", 0)
+			if currentTarget_Directory$ <> ""
+				.k = 0
+				.appx$ = ""
+				while fileReadable(currentTarget_Directory$+"/"+.targetFilename$)
+					.prevAppx$ = .appx$
+					.k += 1
+					.appx$ = "_'.k'"
+					.targetFilename$ = replace_regex$(.targetFilename$, .prevAppx$+"(\.[^\.]+)$", .appx$+"\1", 0)
+				endwhile
+				nowarn Save as WAV file: currentTarget_Directory$+"/"+.targetFilename$
+			endif
+			appendInfoLine: .sourceDirectory$+"/"+.targetFilename$
+			selectObject: .target
+			Remove
+		endfor
+		
+		selectObject: .sourceSound
 		Remove
 	endfor
-	
-	selectObject: .sourceSound
-	if .refRecording <> .sourceSound
-		plusObject: .refRecording
-	endif
+	selectObject: .sourceList
 	Remove
 endfor
-selectObject: .sourceList
+selectObject: controlTable
+if saveReferenceTableName$ <> ""
+	Save as tab-separated file: saveReferenceTableName$
+endif
 Remove
 
 ###############################################################
-#
+# 
 # Pseudonymize recording
-procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .target_Pitch .target_Rate
-	# Initialization
-	.minPhi = 500
-	.maxPhi = 600
-	.minDiff = 20
-	.minF0 = 100
-	.maxF0 = 250
+#
+# .sourceSound:   Sound recording to pseudonymize
+# .refRecording:  Speaker data of original speaker (array)
+# .target_Phi:    Target vocal tract length in neutral F1 ("Phi" Hz)
+# .target_Pitch:  Target Pitch to use in pseudonymized speech
+# .target_Rate:   Target articulation rate to use
+# 
+###############################################################
 
-	selectObject: .refRecording
-	Scale intensity: 70.0
-	.formants = noprogress To Formant (robust): 0.01, 5, 5500, 0.025, 50, 1.5, 5, 1e-06
+# Pseudonymize recording
+procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .target_Pitch .target_Rate
+	# Get spreaker characteristics from the reference recording
+	selectObject: .refData
+	.medianPitch  = Get value: .dataRow, "MedianPitch"
+	.phi  = Get value: .dataRow, "Phi"
+	.phi2 = Get value: .dataRow, "Phi2"
+	.phi3 = Get value: .dataRow, "Phi3"
+	.phi4 = Get value: .dataRow, "Phi4"
+	.phi5 = Get value: .dataRow, "Phi5"
+	.referenceArtRate = Get value: .dataRow, "ArtRate"
 	
-	call extract_speaker_characteristics: .refRecording .formants
+	# # Use the articulation rate of the source
+	# call segment_syllables -25 4 0.3 1 .sourceSound
+	# .artRate = segment_syllables.articulationrate
+	# selectObject: segment_syllables.textgridid
+	# Remove
 	
-	.medianPitch = extract_speaker_characteristics.medianF0
-	.medianF2 = extract_speaker_characteristics.medianF2
-	.medianF3 = extract_speaker_characteristics.medianF3
-	.medianF4 = extract_speaker_characteristics.medianF4
-	.medianF5 = extract_speaker_characteristics.medianF5
-	
-	# Use the articulation rate of the source
-	call segment_syllables -25 4 0.3 1 .sourceSound
-	.artRate = segment_syllables.articulationrate
-	selectObject: segment_syllables.textgridid
-	Remove
-	
-	# Determine all other parameters from the reference
-	call segment_syllables -25 4 0.3 1 .refRecording
-	.syllableKernels = segment_syllables.textgridid
-	.targetTier = 1
-	
-	@select_vowel_target: "F", .refRecording, .formants, .formants, .syllableKernels
-	.vowelTier = select_vowel_target.vowelTier
-	.targetTier = select_vowel_target.targetTier
-	
-	@estimate_Vocal_Tract_Length: .formants, .syllableKernels, .vowelTier
-	.vocalTractLength = estimate_Vocal_Tract_Length.vtl
-	.phi = estimate_Vocal_Tract_Length.phi
+	# Use stored Art Rate
+	.artRate = Get value: .dataRow, "ArtRate"
 	
 	# Determine random target phi
 	while .target_Phi <= 0
@@ -182,22 +380,14 @@ procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .targe
 		endif
 	endwhile
 	
-	.phi2 = .medianF2/3
-	.phi3 = .medianF3/5
-	.phi4 = .medianF4/7
-	.phi5 = .medianF5/9
-	
-	.target_Phi0 = randomUniform(.target_Phi - 40, .target_Phi + 40)
-	.target_Phi2 = randomUniform(.target_Phi - 40, .target_Phi + 40)
-	.target_Phi3 = randomUniform(.target_Phi - 40, .target_Phi + 40)
-	.target_Phi4 = randomUniform(.target_Phi - 40, .target_Phi + 40)
-	.target_Phi5 = randomUniform(.target_Phi - 40, .target_Phi + 40)
+	.target_Phi0 = randomUniform(.target_Phi - 50, .target_Phi + 50)
+	.target_Phi2 = randomUniform(.target_Phi - 50, .target_Phi + 50)
+	.target_Phi3 = randomUniform(.target_Phi - 50, .target_Phi + 50)
+	.target_Phi4 = randomUniform(.target_Phi - 50, .target_Phi + 50)
+	.target_Phi5 = randomUniform(.target_Phi - 50, .target_Phi + 50)
 	
 	printline Original- F0: '.medianPitch:0' Phi- F1-5: '.phi:0' F2: '.phi2:0' F3: '.phi3:0' F4: '.phi4:0' F5: '.phi5:0' Rate: '.artRate:1' 
 	printline Targets- F0: '.target_Pitch:0' Phi- F1-5: '.target_Phi:0' F0: '.target_Phi0:0' F2: '.target_Phi2:0' F3: '.target_Phi3:0' F4: '.target_Phi4:0' F5 '.target_Phi5:0' Rate: '.target_Rate:1'
-	
-	selectObject: .formants, .syllableKernels
-	Remove
 	
 	# Change lower formants
 	selectObject: .sourceSound
@@ -336,6 +526,7 @@ procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .targe
 	.target = Convert to mono
 	Scale intensity: 70.0
 	Rename: "PseudonymizedSpeech"
+	Scale intensity: 70
 	selectObject: .tmp, .f5Filtered
 	Remove
 	selectObject: .target
@@ -356,6 +547,88 @@ procedure createPseudonymousSpeech .sourceSound .refRecording .target_Phi .targe
 	selectObject: .target
 endproc
 
+###############################################################
+
+procedure remove_pauses .sound
+	.newSound = -1
+	selectObject: .sound
+	.duration = Get total duration
+	.pauzes = To TextGrid (silences): 90, 0, -30, 0.1, 0.05, "", "sounding"
+	.numSegment = Get number of intervals: 1
+	for .i to .numSegment
+		selectObject: .pauzes
+		.label$ = Get label of interval: 1, .i
+		if .label$ = "sounding"
+			.start = Get start time of interval: 1, .i
+			.end = Get end time of interval: 1, .i
+			.start -= margin
+			if .start < 0
+				.start = 0
+			endif
+			.end += margin
+			if .end > .duration
+				.end = .duration
+			endif
+			selectObject: .sound
+			.tmp = Extract part: .start, .end, "rectangular", 1.0, "no"
+			if .newSound > 0
+				selectObject: .newSound, .tmp
+				.tmp2 = Concatenate
+				selectObject: .newSound, .tmp
+				Remove
+				
+				.newSound = .tmp2
+			else
+				.newSound = .tmp
+			endif
+		endif
+	endfor
+	
+	# Handle No-new sound file
+	if .newSound <= 0
+		selectObject: .sound
+		.newSound = Copy: "NoPauses"
+	endif
+endproc
+
+###############################################################
+
+procedure vocalTractAndSpeakerMeasures .sound
+	selectObject: .sound
+	.duration = Get total duration
+	Scale intensity: 70.0
+	.formants = noprogress To Formant (robust): 0.01, 5, 5500, 0.025, 50, 1.5, 5, 1e-06
+	
+	call extract_speaker_characteristics: .sound .formants
+	.medianPitch = extract_speaker_characteristics.medianF0
+	.medianF2 = extract_speaker_characteristics.medianF2
+	.medianF3 = extract_speaker_characteristics.medianF3
+	.medianF4 = extract_speaker_characteristics.medianF4
+	.medianF5 = extract_speaker_characteristics.medianF5
+	
+	# Determine all other parameters from the reference
+	call segment_syllables -25 4 0.3 1 .sound
+	.artRate = segment_syllables.articulationrate
+	.syllableKernels = segment_syllables.textgridid
+	.targetTier = 1
+	
+	@select_vowel_target: "F", .sound, .formants, .formants, .syllableKernels
+	.vowelTier = select_vowel_target.vowelTier
+	.targetTier = select_vowel_target.targetTier
+	
+	@estimate_Vocal_Tract_Length: .formants, .syllableKernels, .vowelTier
+	.vocalTractLength = estimate_Vocal_Tract_Length.vtl
+	.phi = estimate_Vocal_Tract_Length.phi
+	
+	.phi2 = .medianF2/3
+	.phi3 = .medianF3/5
+	.phi4 = .medianF4/7
+	.phi5 = .medianF5/9
+	
+	
+	selectObject: .formants, .syllableKernels
+	Remove
+endproc
 
 ###############################################################
 
