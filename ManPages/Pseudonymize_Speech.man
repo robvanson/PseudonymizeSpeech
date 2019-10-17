@@ -1,0 +1,18 @@
+ManPagesTextFile
+"Pseudonymize Speech" "Rob van Son" 20191017 0
+<intro> "Praat script to pseudonymize speech. That is, make it difficult to recognize the speaker while still retaining relevant (para-)linguistic features and intelligibility."
+<entry> "Running the script"
+<normal> "When running the script, a form will appear with the following fields:"
+<list_item> "\bu %%Source%%: Path to the audio file to change. May contain a wildcard character (*) or end in a ""/"", in which case all the matching files will be pseudonymized. If the file name ends in $$.tsv$ or $$.csv$, this is interpreted as a table from which the values needed are read."
+<list_item> "\bu %%Reference%: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are calculated. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. May contain a wild card character (*), end in a ""/"", or point to a $$.tsv$ or $$.csv$ file with a table of speaker values. If %%Reference% is $$-$, the source file is used to determine the speaker characteristics."
+<list_item> "\bu %%Target Phi%: (\fi) The ""neutral"" F__1_ value corresponding to the target vocal tract length."
+<list_item> "\bu %%Target Pitch%: The desired F__0_ value."
+<list_item> "\bu %%Target Rate%: The desired speaking rate (articulation rate) in syllables per second."
+<list_item> "\bu %%Target Directory%: Path to the directory where the results are stored. Existing files are not overwritten, but a number is appended to the filename instead."
+<list_item> "\bu %%Randomize bands%: A list of bands, F0-F5, which will be frequency shifted by random amounts. The F__0_ band is from [0, \fi/2]. The other bands are stacked above each other every 2 times \fi. F__1_: [\fi/2, 2\.c\fi], F__2_: [2\.c\fi, 4\.c\fi] and so on to F__5_: \>_ 8\.c\fi"
+<list_item> "\bu %%Remove pauses%: A check box to indicate whether pauses in the source audio are removed or not."
+<normal> "Buttons:" 
+<list_item> "\bu %%Stop%: Abort the script."
+<list_item> "\bu %%Help%: Open this manual instead of running the script."
+<list_item> "\bu %%Continue%: Run the script with the values given."
+

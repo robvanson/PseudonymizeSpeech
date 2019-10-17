@@ -21,17 +21,26 @@
 #     You should have received a copy of the GNU Affero General Public License
 #     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # 
+label START
+beginPause: "Select recordings"
+	sentence: "Source", "/Users/rob/Desktop/NWSpseudonymized_IFAcorpus/IFAcorpusFT1PseudonymizationPART.tsv"
+	sentence: "Reference", "/Users/rob/Desktop/NWSpseudonymized_IFAcorpus/IFAcorpus_FT_SpeakerData.tsv"
+	sentence: "Target_Phi_(Hz)", "500"
+	sentence: "Target_Pitch_(Hz)", "120"
+	sentence: "Target_Rate_(Syll/sec)", "3.8"
+	sentence: "Target_Directory", "/Users/rob/Desktop/NWSpseudonymized_IFAcorpus/AudioFiles"
+	sentence: "Randomize_bands", "F0, F3, F4, F5"
+	boolean: "Remove_pauses", 0
+clicked = endPause: "Help", "Continue", 2
 
-form Select recordings
-	sentence Source /Users/rob/Desktop/NWSpseudonymized_IFAcorpus/IFAcorpusFT1PseudonymizationPART.tsv
-	sentence Reference /Users/rob/Desktop/NWSpseudonymized_IFAcorpus/IFAcorpus_FT_SpeakerData.tsv
-	sentence Target_Phi_(Hz) 500
-	sentence Target_Pitch_(Hz) 120
-	sentence Target_Rate_(Syll/sec) 3.8
-	sentence Target_Directory /Users/rob/Desktop/NWSpseudonymized_IFAcorpus/AudioFiles
-	boolean Remove_pauses 0
-	sentence Randomize_bands F0, F3, F4, F5
-endform
+if clicked = 1
+	if fileReadable("Pseudonymize_Speech.man") 
+		Read from file: "Pseudonymize_Speech.man"
+	elsif fileReadable("ManPages/Pseudonymize_Speech.man")
+		Read from file: "ManPages/Pseudonymize_Speech.man"
+	endif
+	goto START
+endif
 
 debugON = 1
 # If this name is <> "", save the table
