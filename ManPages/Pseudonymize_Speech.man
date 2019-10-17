@@ -1,6 +1,7 @@
 ManPagesTextFile
 "Pseudonymize Speech" "Rob van Son" 20191017 0
-<intro> "Praat script to pseudonymize speech. That is, make it difficult to recognize the speaker while still retaining relevant (para-)linguistic features and intelligibility."
+<intro> "A %%Praat% script to pseudonymize speech. That is, %%Pseudonymize Speech% tries to make it difficult to recognize the speaker while still retaining relevant (para-)linguistic features and intelligibility."
+
 <entry> "Running the script"
 <normal> "When running the script, a form will appear with the following fields:"
 <list_item> "\bu %%Source%%: Path to the audio file to change. May contain a wildcard character (*) or end in a ""/"", in which case all the matching files will be pseudonymized. If the file name ends in $$.tsv$ or $$.csv$, this is interpreted as a table from which the values needed are read."
@@ -15,4 +16,40 @@ ManPagesTextFile
 <list_item> "\bu %%Stop%: Abort the script."
 <list_item> "\bu %%Help%: Open this manual instead of running the script."
 <list_item> "\bu %%Continue%: Run the script with the values given."
+<normal> "Note that all file paths can be relative to the place where the main script is stored."
+
+<entry> "Source"
+<normal> "If the %%Source% is not a path to soundfiles, it can be a path to a $$.csv$ or $$.tsv$ table. Such a table should have the following column labels: "
+<normal> "$$Source Reference Target_Phi Target_Pitch Target_Rate Target_Directory$"
+<list_item> "\bu $$Source$: A path to sound files."
+<list_item> "\bu $$Reference$: Either a path to sound files or a label also present in the Reference table (see below)."
+<list_item> "\bu $$Target_Phi$: The desired vocal tract length as the neutral F__1_ (\fi) in Hz, see [1]."
+<list_item> "\bu $$Target_Pitch$: The desired F__0_ in Hz."
+<list_item> "\bu $$Target_Rate$: The desired articulation rate in syllables per second."
+<list_item> "\bu $$Target_Directory$: The path to the directory where the resulting audio is written to."
+
+<entry> "Reference"
+<normal> "If the %%Reference% is not a path to soundfiles, it can be a path to a $$.csv$ or $$.tsv$ table. Such a table should have the following column labels: "
+<normal> "$$Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Duration$"
+<list_item> "\bu $$Reference$: A label indicating the source audio or the speaker."
+<list_item> "\bu $$MedianPitch$: Median F0 value of the speaker (audio)."
+<list_item> "\bu $$Phi$: The \fi value calculated according to [1]."
+<list_item> "\bu $$Phi2$: The \fi value calculated from the median F__2_ only."
+<list_item> "\bu $$Phi3$:  The \fi value calculated from the median F__3_ only."
+<list_item> "\bu $$Phi4$:  The \fi value calculated from the median F__3_ only."
+<list_item> "\bu $$Phi5$:  The \fi value calculated from the median F__5_ only."
+<list_item> "\bu $$ArtRate$: Articulation rate in syllables per second."
+<list_item> "\bu $$Duration$: Duration of the reference audio in seconds."
+<normal> "This table is automatically created when the main script is run using audio files as a reference. It can be saved after finishing the script as these calculations can take some time. The next time the script is run for the same speaker(s), the resulting table can be used as %%Reference% input."
+
+<entry> "Target Phi, Target Pitch, and Target Rate"
+<normal> "These fields accept a list of comma separated values, e.g.,"
+<list_item> "$$Target Phi: 510, 550, 585$"
+<list_item> "$$Target Pitch: 120, 150, 185$"
+<list_item> "$$Target Rate: 3.8, 4.0, 4.2$"
+<normal> "These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 120, 3.8), then the second of each list (550, 150, 4.0), then the third (585, 185, 4.2), etc. If one list ends before the others, the last value is reused."
+
+
+<entry> "%%References%"
+<normal> "[1] Lammert AC, Narayanan SS. %%On Short-Time Estimation of Vocal Tract Length from Formant Frequencies%. PLOS ONE. 2015 Jul 15;10(7):e0132193. The vocal tract length (VTL) is calculated as: VTL = 100 \.c 352.95 / (4 \.c \fi) cm"
 

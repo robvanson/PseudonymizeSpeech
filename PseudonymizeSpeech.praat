@@ -349,6 +349,9 @@ Remove
 # .target_Phi:    Target vocal tract length in neutral F1 ("Phi" Hz)
 # .target_Pitch:  Target Pitch to use in pseudonymized speech
 # .target_Rate:   Target articulation rate to use
+# .randomize_bands: Text string containing the bands F0 - F5 that
+#                 are to get a random frequency offset.
+#                 Example: "F0, F3, F4, F5"
 # 
 ###############################################################
 
