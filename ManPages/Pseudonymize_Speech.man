@@ -11,6 +11,7 @@ ManPagesTextFile
 <list_item> "\bu %%Target Rate%: The desired speaking rate (articulation rate) in syllables per second."
 <list_item> "\bu %%Target Directory%: Path to the directory where the results are stored. Existing files are not overwritten, but a number is appended to the filename instead."
 <list_item> "\bu %%Randomize bands%: A list of bands, F0-F5, which will be frequency shifted by random amounts. The F__0_ band is from [0, \fi/2]. The other bands are stacked above each other every 2 times \fi. F__1_: [\fi/2, 2\.c\fi], F__2_: [2\.c\fi, 4\.c\fi] and so on to F__5_: \>_ 8\.c\fi"
+<list_item> "\bu %%Randomize intensity%: A list of bands, F0-F5, which will be intensity shifted by random amounts (in dB). The F__0_ band is from [0, \fi/2]. The other bands are stacked above each other every 2 times \fi. F__1_: [\fi/2, 2\.c\fi], F__2_: [2\.c\fi, 4\.c\fi] and so on to F__5_: \>_ 8\.c\fi"
 <list_item> "\bu %%Remove pauses%: A check box to indicate whether pauses in the source audio are removed or not."
 <normal> "Buttons:" 
 <list_item> "\bu %%Stop%: Abort the script."
@@ -48,6 +49,9 @@ ManPagesTextFile
 <list_item> "$$Target Pitch: 120, 150, 185$"
 <list_item> "$$Target Rate: 3.8, 4.0, 4.2$"
 <normal> "These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 120, 3.8), then the second of each list (550, 150, 4.0), then the third (585, 185, 4.2), etc. If one list ends before the others, the last value is reused."
+
+<entry> "Randomize bands and Randomize intensity"
+<normal> "A list of frequency bands, e.g., ""F0, F3, F4, F5"" for which the frequency or intensity is shifted by random amounts. It is possible to fix the target values of these bands by entering the target \fi value (neutral F__1_) or intensity (70 dB is neutral) to hold for that band. For instance, %%Randomize bands% ""F0 = 550, F3=510, F4 = 570, F5=540"" (Hz) or %%Randomize intensity% ""F0 = 65, F3=76, F4 = 77, F5=67"" (dB). "
 
 
 <entry> "%%References%"

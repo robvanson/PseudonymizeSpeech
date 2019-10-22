@@ -4,7 +4,7 @@
 # License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3 or later
 # email: r.j.j.h.vanson@gmail.com, r.v.son@nki.nl
 # 
-#     VowelTriangle.praat: Praat script to practice vowel pronunciation 
+#     PseudonymizeSpeech.praat: Praat script to de-identify speech 
 #     
 #     Copyright (C) 2019  R.J.J.H. van Son and the Netherlands Cancer Institute
 # 
@@ -23,13 +23,14 @@
 # 
 label START
 beginPause: "Select recordings"
-	sentence: "Source", "/Users/rob/Desktop/NWSpseudonymized_IFAcorpus/IFAcorpusFT1PseudonymizationPART.tsv"
-	sentence: "Reference", "/Users/rob/Desktop/NWSpseudonymized_IFAcorpus/IFAcorpus_FT_SpeakerData.tsv"
-	sentence: "Target_Phi_(Hz)", "500"
-	sentence: "Target_Pitch_(Hz)", "120"
-	sentence: "Target_Rate_(Syll/sec)", "3.8"
-	sentence: "Target_Directory", "/Users/rob/Desktop/NWSpseudonymized_IFAcorpus/AudioFiles"
-	sentence: "Randomize_bands", "F0, F3, F4, F5"
+	sentence: "Source", "TreasurePseudonymization.tsv"
+	sentence: "Reference", "Treasure_SpeakerData.tsv"
+	sentence: "Target Phi", "500 (Hz)"
+	sentence: "Target Pitch", "120 (Hz)"
+	sentence: "Target Rate", "3.8 (Syll/s)"
+	sentence: "Target Directory", "pseudonimized"
+	sentence: "Randomize bands", "F0, F3, F4, F5"
+	sentence: "Randomize intensity", "F0, F3, F4, F5"
 	boolean: "Remove_pauses", 0
 clicked = endPause: "Help", "Continue", 2
 
@@ -42,9 +43,15 @@ if clicked = 1
 	goto START
 endif
 
+
+# Clean up input
+target_Phi$ = replace$(target_Phi$, " (Hz)", "", 0)
+target_Pitch$ = replace$(target_Pitch$, " (Hz)", "", 0)
+target_Rate$ = replace$(target_Rate$, " (Syll/s)", "", 0)
+
 debugON = 1
 # If this name is <> "", save the table
-saveReferenceTableName$ = "/Users/rob/Desktop/SpeakerDataTable.tsv"
+saveReferenceTableName$ = "NEW_SpeakerDataTable.tsv"
 call IntitalizeFormantSpace
 speakerDataTable = Create Table with column names: "SpeakerData", 1, "Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Duration"
 
@@ -309,7 +316,7 @@ for .control to .numControlLines
 			.current_Phi = .currentTarget_PhiList[.i]
 			.current_Pitch = .currentTarget_PitchList[.i]
 			.current_Rate = .currentTarget_RateList[.i]
-			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, randomize_bands$
+			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, randomize_bands$, randomize_intensity$
 			.target = createPseudonymousSpeech.target
 			.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.wav", 0)
 			if currentTarget_Directory$ <> ""
@@ -333,11 +340,19 @@ for .control to .numControlLines
 	endfor
 	selectObject: .sourceList
 	Remove
+	
+	if saveReferenceTableName$ <> ""
+		selectObject: speakerDataTable
+		Save as tab-separated file: saveReferenceTableName$
+	endif
+
 endfor
-selectObject: controlTable
 if saveReferenceTableName$ <> ""
+	selectObject: speakerDataTable
 	Save as tab-separated file: saveReferenceTableName$
 endif
+
+selectObject: controlTable
 Remove
 
 ###############################################################
@@ -352,38 +367,40 @@ Remove
 # .randomize_bands: Text string containing the bands F0 - F5 that
 #                 are to get a random frequency offset.
 #                 Example: "F0, F3, F4, F5"
+# .randomize_intensity: Text string containing the bands F0 - F5 that
+#                 are to get a random intensity offset.
+#                 Example: "F0, F3, F4, F5"
 # 
 ###############################################################
 
 # Pseudonymize recording
-procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .target_Pitch .target_Rate .randomize_bands$
+procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .target_Pitch .target_Rate .randomize_bands$ .randomize_intensity$
 
 	# Randomize formant bands individually
-	modifyF0 = 0
-	modifyF1 = 0
-	modifyF2 = 0
-	modifyF3 = 0
-	modifyF4 = 0
-	modifyF5 = 0
+	# Parse Frequency band randomization
+	for .i from 0 to 5
+		modifyF'.i' = 0
+		if index(.randomize_bands$, "F'.i'")
+			modifyF'.i' = 1
+			if index_regex(.randomize_bands$, "F'.i'\s*=\s*[-+]?\d")
+				.band$ = replace_regex$(.randomize_bands$, "^.*(F'.i'\s*=\s*).*$", "\1", 0)
+				modifyF'.i' = extractNumber(.randomize_bands$, .band$)
+			endif
+		endif
+	endfor
 	
-	if index(.randomize_bands$, "F0")
-		modifyF0 = 1
-	endif
-	if index(.randomize_bands$, "F1")
-		modifyF1 = 1
-	endif
-	if index(.randomize_bands$, "F2")
-		modifyF2 = 1
-	endif
-	if index(.randomize_bands$, "F3")
-		modifyF3 = 1
-	endif
-	if index(.randomize_bands$, "F4")
-		modifyF4 = 1
-	endif
-	if index(.randomize_bands$, "F5")
-		modifyF5 = 1
-	endif
+	# Randomize intensity bands individually
+	# Parse Intensity band randomization
+	for .i from 0 to 5
+		modifyInt'.i' = 0
+		if index(.randomize_intensity$, "F'.i'")
+			modifyInt'.i' = 1000
+			if index_regex(.randomize_intensity$, "F'.i'\s*=\s*[-+]?\d")
+				.band$ = replace_regex$(.randomize_intensity$, "^.*(F'.i'\s*=\s*).*$", "\1", 0)
+				modifyInt'.i' = extractNumber(.randomize_intensity$, .band$)
+			endif
+		endif
+	endfor
 
 	# Get spreaker characteristics from the reference recording
 	selectObject: .refData
@@ -404,22 +421,41 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	# Use stored Art Rate
 	.artRate = Get value: .dataRow, "ArtRate"
 	
-	printline Original- F0: '.medianPitch:0' Phi- F1-5: '.phi:0' F2: '.phi2:0' F3: '.phi3:0' F4: '.phi4:0' F5: '.phi5:0' Rate: '.artRate:1' 
-	printline Targets- F0: '.target_Pitch:0' Phi- F1-5: '.target_Phi:0' F0: '.target_Phi0:0' F2: '.target_Phi2:0' F3: '.target_Phi3:0' F4: '.target_Phi4:0' F5 '.target_Phi5:0' Rate: '.target_Rate:1'
-	
 	# Change lower formants
 	selectObject: .sourceSound
 	.target = noprogress Change gender: 60, 600, .target_Phi / .phi, .target_Pitch, 1, .artRate / .target_Rate
 	Scale intensity: 70.0
-	Rename: "Pseudonymized"	
+	Rename: "Pseudonymized"
+	
+	# Initialize
+	for .i from 0 to 5
+		# Set band frequency targets
+		.target_Phi'.i' = -1;
+		if modifyF0 > 1
+			.target_Phi'.i' = modifyF'.i'
+		elsif modifyF'.i'
+			.target_Phi'.i' = randomUniform(.target_Phi - 75, .target_Phi + 75)
+		endif
+		
+		# Set band intensity targets
+		.set_Int'.i' = 70
+		if modifyInt'.i' < 1000
+			.set_Int'.i' = modifyInt'.i'
+		elsif modifyInt'.i'
+			.set_Int'.i' = 70 + randomUniform(-6, 12)
+		endif
+	endfor
 	
 	# Change F0 band
-	if modifyF0
-		.target_Phi0 = randomUniform(.target_Phi - 50, .target_Phi + 50)
-
+	if modifyF0 or modifyInt0
 		selectObject: .sourceSound
-		.intermediateSoundF0 = noprogress Change gender: 60, 600, .target_Phi0 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
-		Scale intensity: 70.0
+		if modifyF0
+			.intermediateSoundF0 = noprogress Change gender: 60, 600, .target_Phi0 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
+		else
+			selectObject: .target
+			.intermediateSoundF0 = Copy: "CleanCopy"
+		endif
+		Scale intensity: .set_Int0
 		Rename: "IntermediatePseudonymizedF0"
 
 		@replaceBand: .target, .intermediateSoundF0, 0, .target_Phi / 2
@@ -433,12 +469,15 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	endif
 
 	# Change F1 band
-	if modifyF1
-		.target_Phi1 = randomUniform(.target_Phi - 50, .target_Phi + 50)
-
+	if modifyF1 or modifyInt1
 		selectObject: .sourceSound
-		.intermediateSoundF1 = noprogress Change gender: 60, 600, .target_Phi1 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
-		Scale intensity: 70.0
+		if modifyF1
+			.intermediateSoundF1 = noprogress Change gender: 60, 600, .target_Phi1 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
+		else
+			selectObject: .target
+			.intermediateSoundF1 = Copy: "CleanCopy"
+		endif
+		Scale intensity: .set_Int1
 		Rename: "IntermediatePseudonymizedF1"
 
 		@replaceBand: .target, .intermediateSoundF1, .target_Phi / 2, 2*.target_Phi
@@ -452,12 +491,15 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	endif
 	
 	# Change F2 band
-	if modifyF2
-		.target_Phi2 = randomUniform(.target_Phi - 50, .target_Phi + 50)
-
+	if modifyF2 or modifyInt2
 		selectObject: .sourceSound
-		.intermediateSoundF2 = noprogress Change gender: 60, 600, .target_Phi2 / .phi2, .target_Pitch, 1, .artRate / .target_Rate 
-		Scale intensity: 70.0
+		if modifyF2
+			.intermediateSoundF2 = noprogress Change gender: 60, 600, .target_Phi2 / .phi2, .target_Pitch, 1, .artRate / .target_Rate 
+		else
+			selectObject: .target
+			.intermediateSoundF2 = Copy: "CleanCopy"
+		endif
+		Scale intensity: .set_Int2
 		Rename: "IntermediatePseudonymizedF2"
 
 		@replaceBand: .target, .intermediateSoundF2, 2*.target_Phi, 4*.target_Phi
@@ -471,12 +513,15 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	endif
 	
 	# Change F3 band
-	if modifyF3
-		.target_Phi3 = randomUniform(.target_Phi - 50, .target_Phi + 50)
-
+	if modifyF3 or modifyInt3
 		selectObject: .sourceSound
-		.intermediateSoundF3 = noprogress Change gender: 60, 600, .target_Phi3 / .phi3, .target_Pitch, 1, .artRate / .target_Rate 
-		Scale intensity: 70.0
+		if modifyF3
+			.intermediateSoundF3 = noprogress Change gender: 60, 600, .target_Phi3 / .phi3, .target_Pitch, 1, .artRate / .target_Rate 
+		else
+			selectObject: .target
+			.intermediateSoundF3 = Copy: "CleanCopy"
+		endif
+		Scale intensity: .set_Int3
 		Rename: "IntermediatePseudonymizedF3"
 
 		@replaceBand: .target, .intermediateSoundF3, 4*.target_Phi, 6*.target_Phi
@@ -490,12 +535,15 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	endif
 	
 	# Change F4 band
-	if modifyF4
-		.target_Phi4 = randomUniform(.target_Phi - 50, .target_Phi + 50)
-
+	if modifyF4 or modifyInt4
 		selectObject: .sourceSound
-		.intermediateSoundF4 = noprogress Change gender: 60, 600, .target_Phi4 / .phi4, .target_Pitch, 1, .artRate / .target_Rate 
-		Scale intensity: 70.0
+		if modifyF4
+			.intermediateSoundF4 = noprogress Change gender: 60, 600, .target_Phi4 / .phi4, .target_Pitch, 1, .artRate / .target_Rate 
+		else
+			selectObject: .target
+			.intermediateSoundF4 = Copy: "CleanCopy"
+		endif
+		Scale intensity: .set_Int4
 		Rename: "IntermediatePseudonymizedF4"
 
 		@replaceBand: .target, .intermediateSoundF4, 6*.target_Phi, 8*.target_Phi
@@ -509,12 +557,15 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	endif
 	
 	# Change F5 band
-	if modifyF5
-		.target_Phi5 = randomUniform(.target_Phi - 50, .target_Phi + 50)
-
+	if modifyF5 or modifyInt5
 		selectObject: .sourceSound
-		.intermediateSoundF5 = noprogress Change gender: 60, 600, .target_Phi5 / .phi5, .target_Pitch, 1, .artRate / .target_Rate 
-		Scale intensity: 70.0
+		if modifyF5
+			.intermediateSoundF5 = noprogress Change gender: 60, 600, .target_Phi5 / .phi5, .target_Pitch, 1, .artRate / .target_Rate 
+		else
+			selectObject: .target
+			.intermediateSoundF5 = Copy: "CleanCopy"
+		endif
+		Scale intensity: .set_Int5
 		Rename: "IntermediatePseudonymizedF5"
 
 		@replaceBand: .target, .intermediateSoundF5, 8*.target_Phi, 20000
@@ -527,6 +578,10 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		Rename: "Pseudonymized"
 	endif
 	
+	# Write values to screen
+	printline Original- F0: '.medianPitch:0' Phi- F1-5: '.phi:0' F2: '.phi2:0' F3: '.phi3:0' F4: '.phi4:0' F5: '.phi5:0' Rate: '.artRate:1' 
+	printline Targets- F0: '.target_Pitch:0' Phi- F1-5: '.target_Phi:0' F0: '.target_Phi0:0' F2: '.target_Phi2:0' F3: '.target_Phi3:0' F4: '.target_Phi4:0' F5 '.target_Phi5:0' Rate: '.target_Rate:1'
+
 	selectObject: .target
 endproc
 
