@@ -1,0 +1,120 @@
+<html><head><meta name="robots" content="index,follow"><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Pseudonymize Speech</title></head><body bgcolor="#FFFFFF">
+
+<table border=0 cellpadding=0 cellspacing=0><tr><td bgcolor="#CCCC00"><table border=4 cellpadding=9><tr><td align=middle bgcolor="#000000"><font face="Palatino,Times" size=6 color="#999900"><b>
+Pseudonymize Speech
+</b></font></table></table>
+<p>
+A <i>Praat</i> script to pseudonymize speech. That is, <i>Pseudonymize Speech</i> tries to make it difficult to recognize the speaker while still retaining relevant (para-)linguistic features and intelligibility.</p>
+<h3>
+Running the script</h3>
+<p>
+When running the script, a form will appear with the following fields:</p>
+<ul>
+<li>
+&nbsp;<i>Source</i><i></i>: Path to the audio file to change. May contain a wildcard character (*) or end in a "/", in which case all the matching files will be pseudonymized. If the file name ends in <code>.tsv</code> or <code>.csv</code>, this is interpreted as a table from which the values needed are read.
+<li>
+&nbsp;<i>Reference</i>: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are calculated. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. May contain a wild card character (*), end in a "/", or point to a <code>.tsv</code> or <code>.csv</code> file with a table of speaker values. If <i>Reference</i> is <code>-</code>, the source file is used to determine the speaker characteristics.
+<li>
+&nbsp;<i>Target Phi</i>: (&#966;) The "neutral" F<sub>1</sub> value corresponding to the target vocal tract length.
+<li>
+&nbsp;<i>Target Pitch</i>: The desired F<sub>0</sub> value.
+<li>
+&nbsp;<i>Target Rate</i>: The desired speaking rate (articulation rate) in syllables per second.
+<li>
+&nbsp;<i>Target Directory</i>: Path to the directory where the results are stored. Existing files are not overwritten, but a number is appended to the filename instead.
+<li>
+&nbsp;<i>Randomize bands</i>: A list of bands, F0-F5, which will be frequency shifted by random amounts. The F<sub>0</sub> band is from [0, &#966;/2]. The other bands are stacked above each other every 2 times &#966;. F<sub>1</sub>: [&#966;/2, 2&#183;&#966;], F<sub>2</sub>: [2&#183;&#966;, 4&#183;&#966;] and so on to F<sub>5</sub>: &#8805; 8&#183;&#966;
+<li>
+&nbsp;<i>Randomize intensity</i>: A list of bands, F0-F5, which will be intensity shifted by random amounts (in dB). The F<sub>0</sub> band is from [0, &#966;/2]. The other bands are stacked above each other every 2 times &#966;. F<sub>1</sub>: [&#966;/2, 2&#183;&#966;], F<sub>2</sub>: [2&#183;&#966;, 4&#183;&#966;] and so on to F<sub>5</sub>: &#8805; 8&#183;&#966;
+<li>
+&nbsp;<i>Remove pauses</i>: A check box to indicate whether pauses in the source audio are removed or not.
+</ul>
+<p>
+Buttons:</p>
+<ul>
+<li>
+&nbsp;<i>Stop</i>: Abort the script.
+<li>
+&nbsp;<i>Help</i>: Open this manual instead of running the script.
+<li>
+&nbsp;<i>Continue</i>: Run the script with the values given.
+</ul>
+<p>
+Note that all file paths can be relative to the place where the main script is stored.</p>
+<h3>
+Source</h3>
+<p>
+If the <i>Source</i> is not a path to soundfiles, it can be a path to a <code>.csv</code> or <code>.tsv</code> table. Such a table should have the following column labels: </p>
+<p>
+<code>Source Reference Target_Phi Target_Pitch Target_Rate Target_Directory</code></p>
+<ul>
+<li>
+&nbsp;<code>Source</code>: A path to sound files.
+<li>
+&nbsp;<code>Reference</code>: Either a path to sound files or a label also present in the Reference table (see below).
+<li>
+&nbsp;<code>Target_Phi</code>: The desired vocal tract length as the neutral F<sub>1</sub> (&#966;) in Hz, see [1].
+<li>
+&nbsp;<code>Target_Pitch</code>: The desired F<sub>0</sub> in Hz.
+<li>
+&nbsp;<code>Target_Rate</code>: The desired articulation rate in syllables per second.
+<li>
+&nbsp;<code>Target_Directory</code>: The path to the directory where the resulting audio is written to.
+</ul>
+<h3>
+Reference</h3>
+<p>
+If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code>.csv</code> or <code>.tsv</code> table. Such a table should have the following column labels: </p>
+<p>
+<code>Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Duration</code></p>
+<ul>
+<li>
+&nbsp;<code>Reference</code>: A label indicating the source audio or the speaker.
+<li>
+&nbsp;<code>MedianPitch</code>: Median F0 value of the speaker (audio).
+<li>
+&nbsp;<code>Phi</code>: The &#966; value calculated according to [1].
+<li>
+&nbsp;<code>Phi2</code>: The &#966; value calculated from the median F<sub>2</sub> only.
+<li>
+&nbsp;<code>Phi3</code>:  The &#966; value calculated from the median F<sub>3</sub> only.
+<li>
+&nbsp;<code>Phi4</code>:  The &#966; value calculated from the median F<sub>3</sub> only.
+<li>
+&nbsp;<code>Phi5</code>:  The &#966; value calculated from the median F<sub>5</sub> only.
+<li>
+&nbsp;<code>ArtRate</code>: Articulation rate in syllables per second.
+<li>
+&nbsp;<code>Duration</code>: Duration of the reference audio in seconds.
+</ul>
+<p>
+This table is automatically created when the main script is run using audio files as a reference. It can be saved after finishing the script as these calculations can take some time. The next time the script is run for the same speaker(s), the resulting table can be used as <i>Reference</i> input.</p>
+<h3>
+Target Phi, Target Pitch, and Target Rate</h3>
+<p>
+These fields accept a list of comma separated values, e.g.,</p>
+<dl>
+<dd>
+<code>Target Phi: 510, 550, 585</code>
+<dd>
+<code>Target Pitch: 120, 150, 185</code>
+<dd>
+<code>Target Rate: 3.8, 4.0, 4.2</code>
+</dl>
+<p>
+These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 120, 3.8), then the second of each list (550, 150, 4.0), then the third (585, 185, 4.2), etc. If one list ends before the others, the last value is reused. A value of "0" for any of these indicates that the corresponding reference value, &#966;, median F0, or articulation rate, will be used, i.e., no change. </p>
+<h3>
+Randomize bands and Randomize intensity</h3>
+<p>
+A list of frequency bands, e.g., "F0, F3, F4, F5" for which the frequency or intensity is shifted by random amounts. It is possible to fix the target values of these bands by entering the target &#966; value (neutral F<sub>1</sub>) or intensity (70 dB is neutral) to hold for that band. For instance, <i>Randomize bands</i> "F0 = 550, F3=510, F4 = 570, F5=540" (Hz) or <i>Randomize intensity</i> "F0 = 65, F3=76, F4 = 77, F5=67" (dB). </p>
+<h3>
+<i>References</i></h3>
+<p>
+[1] Lammert AC, Narayanan SS. <i>On Short-Time Estimation of Vocal Tract Length from Formant Frequencies</i>. PLOS ONE. 2015 Jul 15;10(7):e0132193. The vocal tract length (VTL) is calculated as: VTL = 100 &#183; 352.95 / (4 &#183; &#966;) cm</p>
+<hr>
+<address>
+	<p>&copy; Rob van Son, October 17, 2019</p>
+</address>
+</body>
+</html>

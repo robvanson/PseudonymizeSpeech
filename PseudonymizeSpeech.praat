@@ -28,7 +28,7 @@ beginPause: "Select recordings"
 	sentence: "Target Phi", "500 (Hz)"
 	sentence: "Target Pitch", "120 (Hz)"
 	sentence: "Target Rate", "3.8 (Syll/s)"
-	sentence: "Target Directory", "pseudonimized"
+	sentence: "Target Directory", "pseudonymized"
 	sentence: "Randomize bands", "F0, F3, F4, F5"
 	sentence: "Randomize intensity", "F0, F3, F4, F5"
 	boolean: "Remove_pauses", 0
@@ -376,6 +376,27 @@ Remove
 # Pseudonymize recording
 procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .target_Pitch .target_Rate .randomize_bands$ .randomize_intensity$
 
+	# Get spreaker characteristics from the reference recording
+	selectObject: .refData
+	.medianPitch  = Get value: .dataRow, "MedianPitch"
+	.phi  = Get value: .dataRow, "Phi"
+	.phi2 = Get value: .dataRow, "Phi2"
+	.phi3 = Get value: .dataRow, "Phi3"
+	.phi4 = Get value: .dataRow, "Phi4"
+	.phi5 = Get value: .dataRow, "Phi5"
+	.referenceArtRate = Get value: .dataRow, "ArtRate"
+	
+	# Zero means the standard stored value
+	if .target_Phi <= 0
+		.target_Phi = .phi
+	endif
+	if .target_Pitch <= 0
+		.target_Pitch = .medianPitch
+	endif
+	if .target_Rate <= 0
+		.target_Rate = .referenceArtRate
+	endif
+
 	# Randomize formant bands individually
 	# Parse Frequency band randomization
 	for .i from 0 to 5
@@ -385,6 +406,13 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 			if index_regex(.randomize_bands$, "F'.i'\s*=\s*[-+]?\d")
 				.band$ = replace_regex$(.randomize_bands$, "^.*(F'.i'\s*=\s*).*$", "\1", 0)
 				modifyF'.i' = extractNumber(.randomize_bands$, .band$)
+				if modifyF'.i' <= 0
+					if .i <= 1
+						modifyF'.i' = .phi
+					else
+						modifyF'.i' = .phi'.i'
+					endif
+				endif
 			endif
 		endif
 	endfor
@@ -398,19 +426,13 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 			if index_regex(.randomize_intensity$, "F'.i'\s*=\s*[-+]?\d")
 				.band$ = replace_regex$(.randomize_intensity$, "^.*(F'.i'\s*=\s*).*$", "\1", 0)
 				modifyInt'.i' = extractNumber(.randomize_intensity$, .band$)
+				if modifyInt'.i' <= 0
+					# Should be set more intelligently
+					modifyInt'.i' = 70
+				endif
 			endif
 		endif
-	endfor
-
-	# Get spreaker characteristics from the reference recording
-	selectObject: .refData
-	.medianPitch  = Get value: .dataRow, "MedianPitch"
-	.phi  = Get value: .dataRow, "Phi"
-	.phi2 = Get value: .dataRow, "Phi2"
-	.phi3 = Get value: .dataRow, "Phi3"
-	.phi4 = Get value: .dataRow, "Phi4"
-	.phi5 = Get value: .dataRow, "Phi5"
-	.referenceArtRate = Get value: .dataRow, "ArtRate"
+	endfor	
 	
 	# # Use the articulation rate of the source
 	# call segment_syllables -25 4 0.3 1 .sourceSound
@@ -439,7 +461,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		
 		# Set band intensity targets
 		.set_Int'.i' = 70
-		if modifyInt'.i' < 1000
+		if modifyInt'.i' and modifyInt'.i' < 1000
 			.set_Int'.i' = modifyInt'.i'
 		elsif modifyInt'.i'
 			.set_Int'.i' = 70 + randomUniform(-6, 12)
