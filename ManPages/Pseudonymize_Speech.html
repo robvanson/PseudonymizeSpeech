@@ -107,11 +107,15 @@ These values are used in turn. If several fields have lists, they are used in pa
 <h3>
 Randomize bands and Randomize intensity</h3>
 <p>
-A list of frequency bands, e.g., "F0, F3, F4, F5" for which the frequency or intensity is shifted by random amounts. It is possible to fix the target values of these bands by entering the target &#966; value (neutral F<sub>1</sub>) or intensity (70 dB is neutral) to hold for that band. For instance, <i>Randomize bands</i> "F0 = 550, F3=510, F4 = 570, F5=540" (Hz) or <i>Randomize intensity</i> "F0 = 65, F3=76, F4 = 77, F5=67" (dB). </p>
+A list of frequency bands, e.g., "F0, F3, F4, F5" for which the frequency or intensity is shifted by random amounts. It is possible to fix the target values of these bands by entering the target &#966; value (neutral F<sub>1</sub>, roughly between 500-600 Hz) or intensity (roughly between 45-70 dB) to hold for that band. For instance, <i>Randomize bands</i> "F0 = 550, F3=510, F4 = 570, F5=540" (Hz) or <i>Randomize intensity</i> "F0 = 65, F3=76, F4 = 77, F5=67" (dB).</p>
+<p>
+Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 550, 530, 530, 510, 560</i> &#177;50 Hz and corresponding intensities: <i>65, 65, 55, 50, 43, 53</i> &#177;9 dB. </p>
 <h3>
 <i>References</i></h3>
 <p>
-[1] Lammert AC, Narayanan SS. <i>On Short-Time Estimation of Vocal Tract Length from Formant Frequencies</i>. PLOS ONE. 2015 Jul 15;10(7):e0132193. The vocal tract length (VTL) is calculated as: VTL = 100 &#183; 352.95 / (4 &#183; &#966;) cm</p>
+[1] Lammert AC, Narayanan SS. <i>On Short-Time Estimation of Vocal Tract Length from Formant Frequencies</i>. PLOS ONE. 2015 Jul 15;10(7):e0132193. </p>
+<p>
+The vocal tract length (VTL) is calculated as: VTL = 100 &#183; 352.95 / (4 &#183; &#966;) cm. Note that a different formant tracking algorithm is used in <i>Pseudonymize Speech</i> than was used in [1] and the estimated &#966; values here are used only as scale factors. They should not be interpreted as representing "real" VTL values. </p>
 <hr>
 <address>
 	<p>&copy; Rob van Son, October 17, 2019</p>
