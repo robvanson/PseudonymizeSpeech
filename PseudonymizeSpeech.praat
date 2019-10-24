@@ -39,6 +39,11 @@ if clicked = 1
 		Read from file: "Pseudonymize_Speech.man"
 	elsif fileReadable("ManPages/Pseudonymize_Speech.man")
 		Read from file: "ManPages/Pseudonymize_Speech.man"
+	else
+		beginPause: "See manual"
+		comment: "https://robvanson.github.io/"
+		comment: "PseudonymizeSpeech/ManPages/Pseudonymize_Speech.html"
+		helpClicked = endPause: "Continue", 1
 	endif
 	goto START
 endif
@@ -356,6 +361,7 @@ for .control to .numControlLines
 				nowarn Save as WAV file: currentTarget_Directory$+"/"+.targetFilename$
 			endif
 			appendInfoLine: .sourceDirectory$+"/"+.targetFilename$
+
 			selectObject: .target
 			Remove
 		endfor
@@ -370,7 +376,6 @@ for .control to .numControlLines
 		selectObject: speakerDataTable
 		Save as tab-separated file: saveReferenceTableName$
 	endif
-
 endfor
 if saveReferenceTableName$ <> ""
 	selectObject: speakerDataTable
@@ -496,7 +501,8 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyInt'.i' > 0 and modifyInt'.i' < 1000
 			.target_Int'.i' = modifyInt'.i'
 		elsif modifyInt'.i' > 0 and .int'.i' > 0
-			.target_Int'.i' = .int'.i' + randomUniform(-6, 6)
+			# This sounds bad when the random number is negative, why?
+			.target_Int'.i' = .int'.i' + randomUniform(-6, 12)
 		endif
 	endfor
 	
