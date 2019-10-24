@@ -24,9 +24,9 @@ When running the script, a form will appear with the following fields:</p>
 <li>
 &nbsp;<i>Target Directory</i>: Path to the directory where the results are stored. Existing files are not overwritten, but a number is appended to the filename instead.
 <li>
-&nbsp;<i>Randomize bands</i>: A list of bands, F0-F5, which will be frequency shifted by random amounts. The F<sub>0</sub> band is from [0, &#966;/2]. The other bands are stacked above each other every 2 times &#966;. F<sub>1</sub>: [&#966;/2, 2&#183;&#966;], F<sub>2</sub>: [2&#183;&#966;, 4&#183;&#966;] and so on to F<sub>5</sub>: &#8805; 8&#183;&#966;
+&nbsp;<i>Randomize bands</i>: A list of bands, F0-F5, which will be frequency shifted by random amounts. The F<sub>0</sub> band is from [0, &#966;/2]. The other bands are stacked above each other every 2 times &#966;. F<sub>1</sub>: [&#966;/2, 2&#183;&#966;], F<sub>2</sub>: [2&#183;&#966;, 4&#183;&#966;] and so on to F<sub>5</sub>: [8&#183;&#966;, 10&#183;&#966;]
 <li>
-&nbsp;<i>Randomize intensity</i>: A list of bands, F0-F5, which will be intensity shifted by random amounts (in dB). The F<sub>0</sub> band is from [0, &#966;/2]. The other bands are stacked above each other every 2 times &#966;. F<sub>1</sub>: [&#966;/2, 2&#183;&#966;], F<sub>2</sub>: [2&#183;&#966;, 4&#183;&#966;] and so on to F<sub>5</sub>: &#8805; 8&#183;&#966;
+&nbsp;<i>Randomize intensity</i>: A list of bands, F0-F5, which will be intensity shifted by random amounts (in dB). The F<sub>0</sub> band is from [0, &#966;/2]. The other bands are stacked above each other every 2 times &#966;. F<sub>1</sub>: [&#966;/2, 2&#183;&#966;], F<sub>2</sub>: [2&#183;&#966;, 4&#183;&#966;] and so on to F<sub>5</sub>: [8&#183;&#966;, 10&#183;&#966;]
 <li>
 &nbsp;<i>Remove pauses</i>: A check box to indicate whether pauses in the source audio are removed or not.
 </ul>
@@ -67,7 +67,7 @@ Reference</h3>
 <p>
 If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code>.csv</code> or <code>.tsv</code> table. Such a table should have the following column labels: </p>
 <p>
-<code>Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Duration</code></p>
+<code>Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration</code></p>
 <ul>
 <li>
 &nbsp;<code>Reference</code>: A label indicating the source audio or the speaker.
@@ -80,11 +80,13 @@ If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code
 <li>
 &nbsp;<code>Phi3</code>:  The &#966; value calculated from the median F<sub>3</sub> only.
 <li>
-&nbsp;<code>Phi4</code>:  The &#966; value calculated from the median F<sub>3</sub> only.
+&nbsp;<code>Phi4</code>:  The &#966; value calculated from the median F<sub>4</sub> only.
 <li>
 &nbsp;<code>Phi5</code>:  The &#966; value calculated from the median F<sub>5</sub> only.
 <li>
 &nbsp;<code>ArtRate</code>: Articulation rate in syllables per second.
+<li>
+&nbsp;<code>Int0-5</code>: Intensities measured in bands 0-5. Values &#8804; 0 are ignored. 
 <li>
 &nbsp;<code>Duration</code>: Duration of the reference audio in seconds.
 </ul>
@@ -109,13 +111,13 @@ Randomize bands and Randomize intensity</h3>
 <p>
 A list of frequency bands, e.g., "F0, F3, F4, F5" for which the frequency or intensity is shifted by random amounts. It is possible to fix the target values of these bands by entering the target &#966; value (neutral F<sub>1</sub>, roughly between 500-600 Hz) or intensity (roughly between 45-70 dB) to hold for that band. For instance, <i>Randomize bands</i> "F0 = 550, F3=510, F4 = 570, F5=540" (Hz) or <i>Randomize intensity</i> "F0 = 65, F3=76, F4 = 77, F5=67" (dB).</p>
 <p>
-Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 550, 530, 530, 510, 560</i> &#177;50 Hz and corresponding intensities: <i>65, 65, 55, 50, 43, 53</i> &#177;9 dB. </p>
+Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 550, 530, 530, 510, 560</i> &#177;50 Hz and corresponding intensities: <i>65, 65, 55, 50, 43, 47</i> &#177;9 dB. </p>
 <h3>
 <i>References</i></h3>
 <p>
 [1] Lammert AC, Narayanan SS. <i>On Short-Time Estimation of Vocal Tract Length from Formant Frequencies</i>. PLOS ONE. 2015 Jul 15;10(7):e0132193. </p>
 <p>
-The vocal tract length (VTL) is calculated as: VTL = 100 &#183; 352.95 / (4 &#183; &#966;) cm. Note that a different formant tracking algorithm is used in <i>Pseudonymize Speech</i> than was used in [1] and the estimated &#966; values here are used only as scale factors. They should not be interpreted as representing "real" VTL values. </p>
+The vocal tract length (VTL) is calculated as: VTL = 100 &#183; 352.95 / (4 &#183; &#966;) cm. Note that a different formant tracking algorithm is used in <i>Pseudonymize Speech</i> than was used in [1] and the estimated &#966; values here are used only as scale factors. They should not be interpreted as corresponding to "real" VTL values. </p>
 <hr>
 <address>
 	<p>&copy; Rob van Son, October 17, 2019</p>

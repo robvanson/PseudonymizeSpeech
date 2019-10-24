@@ -31,7 +31,7 @@ ManPagesTextFile
 
 <entry> "Reference"
 <normal> "If the %%Reference% is not a path to soundfiles, it can be a path to a $$.csv$ or $$.tsv$ table. Such a table should have the following column labels: "
-<normal> "$$Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Duration$"
+<normal> "$$Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration$"
 <list_item> "\bu $$Reference$: A label indicating the source audio or the speaker."
 <list_item> "\bu $$MedianPitch$: Median F0 value of the speaker (audio)."
 <list_item> "\bu $$Phi$: The \fi value calculated according to [1]."
@@ -40,6 +40,7 @@ ManPagesTextFile
 <list_item> "\bu $$Phi4$:  The \fi value calculated from the median F__4_ only."
 <list_item> "\bu $$Phi5$:  The \fi value calculated from the median F__5_ only."
 <list_item> "\bu $$ArtRate$: Articulation rate in syllables per second."
+<list_item> "\bu $$Int0-5$: Intensities measured in bands 0-5. Values \<_ 0 are ignored. "
 <list_item> "\bu $$Duration$: Duration of the reference audio in seconds."
 <normal> "This table is automatically created when the main script is run using audio files as a reference. It can be saved after finishing the script as these calculations can take some time. The next time the script is run for the same speaker(s), the resulting table can be used as %%Reference% input."
 
