@@ -24,7 +24,7 @@
 label START
 beginPause: "Select recordings"
 	sentence: "Source", "ControlPseudonymization.tsv"
-	sentence: "Reference", "SpeakerProfile.tsv"
+	sentence: "Reference", "SpeakerProfiles.tsv"
 	sentence: "Target Phi", "500 (Hz)"
 	sentence: "Target Pitch", "120 (Hz)"
 	sentence: "Target Rate", "3.8 (Syll/s)"
