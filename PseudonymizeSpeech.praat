@@ -42,7 +42,7 @@ if clicked = 1
 	else
 		beginPause: "See manual"
 		comment: "https://robvanson.github.io/"
-		comment: "PseudonymizeSpeech/ManPages/Pseudonymize_Speech.html"
+		comment: "PseudonymizeSpeech"
 		helpClicked = endPause: "Continue", 1
 	endif
 	goto START
@@ -371,7 +371,7 @@ for .control to .numControlLines
 	endfor
 	selectObject: .sourceList
 	Remove
-	
+
 	if saveReferenceTableName$ <> ""
 		selectObject: speakerDataTable
 		Save as tab-separated file: saveReferenceTableName$
@@ -487,6 +487,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	Rename: "Pseudonymized"
 	
 	# Initialize
+	.compensateFiltering = 0
 	for .i from 0 to 5
 		# Set band frequency targets
 		.target_Phi'.i' = -1;
@@ -499,10 +500,11 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		# Set band intensity targets
 		.target_Int'.i' = 70
 		if modifyInt'.i' > 0 and modifyInt'.i' < 1000
+			.compensateFiltering += 1
 			.target_Int'.i' = modifyInt'.i'
 		elsif modifyInt'.i' > 0 and .int'.i' > 0
-			# This sounds bad when the random number is negative, why?
-			.target_Int'.i' = .int'.i' + randomUniform(-6, 12)
+			.compensateFiltering += 1
+			.target_Int'.i' = .int'.i' + randomUniform(-6, 6)
 		endif
 	endfor
 	
@@ -628,7 +630,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		Scale intensity: 70 + (.target_Int5 - .int5)
 		Rename: "IntermediatePseudonymizedF5"
 
-		@replaceBand: .target, .intermediateSoundF5, 8*.target_Phi, 20000
+		@replaceBand: .target, .intermediateSoundF5, 8*.target_Phi, 10*.target_Phi
 		
 		selectObject:  .target, .intermediateSoundF5
 		Remove
@@ -745,8 +747,6 @@ procedure bandIntensityMeasures .sound .phi
 		.low = .high
 		if .i = 0
 			.high = .phi / 2
-		elsif .i = 5
-			.high = 20000
 		else
 			.high = 2 * .i * .phi
 		endif
