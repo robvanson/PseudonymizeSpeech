@@ -57,7 +57,9 @@ target_Rate$ = replace$(target_Rate$, " (Syll/s)", "", 0)
 debugON = 1
 # If this name is <> "", save the table
 saveReferenceTableName$ = "NEW_SpeakerDataTable.tsv"
+# Initialize the values used by the vowel triangle procedure
 call IntitalizeFormantSpace
+
 speakerDataTable = Create Table with column names: "SpeakerData", 1, "Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration"
 
 # The Source input contains a control table
@@ -105,15 +107,27 @@ if index_regex(source$, "\.(tsv|csv)$")
 			controlTarget_Directory = 6
 			Insert column: controlTarget_Directory, "Target_Directory"
 		endif
+		controlRandomize_bands = Get column index: "Randomize_bands"
+		if controlRandomize_bands <= 0
+			controlRandomize_bands = 7
+			Insert column: controlRandomize_bands, "Target_Directory"
+		endif
+		controlRandomize_intensity = Get column index: "Randomize_intensity"
+		if controlRandomize_intensity <= 0
+			controlRandomize_intensity = 8
+			Insert column: controlRandomize_intensity, "Target_Directory"
+		endif
 	endif
 else
-	controlTable = Create Table with column names: "Control_Table", 1, "Source Reference Target_Phi Target_Pitch Target_Rate Target_Directory"
+	controlTable = Create Table with column names: "Control_Table", 1, "Source Reference Target_Phi Target_Pitch Target_Rate Target_Directory Randomize_bands Randomize_intensity"
 	controlSource = -1
 	controlReference = 2
 	controlTarget_Phi = 3
 	controlTarget_Pitch = 4
 	controlTarget_Rate = 5
 	controlTarget_Directory = 6
+	controlRandomize_bands = 7
+	controlRandomize_intensity = 8
 endif
 
 if index_regex(reference$, "\.(tsv|csv)$")
@@ -138,10 +152,14 @@ else
 	exitScript: "Source Table is not found and could not be created"
 endif
 
+# For each line in the control list
 for .control to .numControlLines
 	.currentTarget_PhiList [1] = -1
 	.currentTarget_PitchList [1] = -1
 	.currentTarget_RateList [1] = -1
+	.currentRandomize_bandsList$ [1] = ""
+	.currentRandomize_intensityList$ [1] = ""
+	
 	# Read values
 	selectObject: controlTable
 	.tmp$ = Get value: .control, "Source"
@@ -200,41 +218,98 @@ for .control to .numControlLines
 	.numSourceFiles = Get number of strings
 	.sourceDirectory$ = replace_regex$(currentSource$, "/[^/]+$", "", 0)
 	
-	if index_regex(currentTarget_Phi$, "[;,]")
-		.i = 1
-		.phiTargets$ = currentTarget_Phi$
-		.pitchTargets$ = currentTarget_Pitch$
-		.rateTargets$ = currentTarget_Rate$
-		while .phiTargets$ <> ""
-			# Phi
-			.current = extractNumber(.phiTargets$, "")
-			.currentTarget_PhiList [.i] = .current
-			.phiTargets$ = replace_regex$(.phiTargets$, "^[0-9\.]+[,;]?", "", 0)
-			# Pitch
-			.current = .currentTarget_PitchList [max(.i - 1, 1)]
-			if .pitchTargets$ <> ""
-				.current = extractNumber(.pitchTargets$, "")
-			endif
-			.currentTarget_PitchList [.i] = .current
-			.pitchTargets$ = replace_regex$(.pitchTargets$, "^[0-9\.]+[,;]?", "", 0)
-			# Rate
-			.current = .currentTarget_RateList [max(.i - 1, 1)]
-			if .rateTargets$ <> ""
-				.current = extractNumber(.rateTargets$, "")
-			endif
-			.currentTarget_RateList [.i] = .current
-			.rateTargets$ = replace_regex$(.rateTargets$, "^[0-9\.]+[,;]?", "", 0)
-			# Next
-			.i += 1
-		endwhile
-		.numTargets = .i - 1
-	else
-		.currentTarget_PhiList[1] = 'currentTarget_Phi$'
-		.currentTarget_PitchList[1] = 'currentTarget_Pitch$'
-		.currentTarget_RateList[1] = 'currentTarget_Rate$'
-		.numTargets = 1
-	endif
+	# Parse targets
+	# Split targets
+	.numTargets = 0
+	.phiTargets$ = currentTarget_Phi$
+	.pitchTargets$ = currentTarget_Pitch$
+	.rateTargets$ = currentTarget_Rate$
+	.phiTargetList$ [1] = currentReference$
+	.pitchTargetList$ [1] = currentReference$
+	.rateTargetList$ [1] = currentReference$
+	.randomize_bandsList$ [1] = randomize_bands$
+	.randomize_intensityList$ [1] = randomize_intensity$
 	
+	while .phiTargets$ <> "" or .pitchTargets$ <> "" or .rateTargets$ <> ""
+		.prev = max(.numTargets, 1)
+		.numTargets += 1
+		
+		if .phiTargets$ <> ""
+			.phiTargetList$ [.numTargets] = replace_regex$(.phiTargets$, "^([^;, ]+).*$", "\1", 0)
+			.phiTargets$ = replace_regex$(.phiTargets$, "^[^;, ]+[,;]?", "", 0)
+		else
+			.phiTargetList$ [.numTargets] = .phiTargetList$ [.prev]
+		endif
+		if .pitchTargets$ <> ""
+			.pitchTargetList$ [.numTargets] = replace_regex$(.pitchTargets$, "^([^;, ]+).*$", "\1", 0)
+			.pitchTargets$ = replace_regex$(.pitchTargets$, "^[^;, ]+[,;]?", "", 0)
+		else
+			if index_regex(.phiTargetList$ [.numTargets] ,"^[^0-9+-]")
+				.pitchTargetList$ [.numTargets] = .phiTargetList$ [.numTargets]
+			else
+				.pitchTargetList$ [.numTargets] = .pitchTargetList$ [.prev]
+			endif
+		endif
+		if .rateTargets$ <> ""
+			.rateTargetList$ [.numTargets] = replace_regex$(.rateTargets$, "^([^;, ]+).*$", "\1", 0)
+			.rateTargets$ = replace_regex$(.rateTargets$, "^[^;, ]+[,;]?", "", 0)
+		else
+			if index_regex(.phiTargetList$ [.numTargets] ,"^[^0-9+-]")
+				.rateTargetList$ [.numTargets] = .phiTargetList$ [.numTargets]
+			else
+				.rateTargetList$ [.numTargets] = .rateTargetList$ [.prev]
+			endif
+		endif
+		# If a reference speaker is entered, surpress randomization
+		if index_regex(.phiTargetList$ [.numTargets] ,"^[^0-9+-]")
+			.randomize_bandsList$ [.numTargets] = .phiTargetList$ [.numTargets]
+			.randomize_intensityList$ [.numTargets] = .phiTargetList$ [.numTargets]
+		else
+			.randomize_bandsList$ [.numTargets] = .randomize_bandsList$ [.prev]
+			.randomize_intensityList$ [.numTargets] = .randomize_intensityList$ [.prev]
+		endif
+	endwhile
+	
+	# Fill in the targets
+	lastRandom$ = ""
+	for .i to .numTargets
+		if index_regex(.phiTargetList$ [.i] ,"^[^0-9+-]")			
+			@readSpeakerProfile: speakerDataTable, .phiTargetList$ [.i], currentReference$
+			.currentTarget_PhiList[.i] = readSpeakerProfile.phi
+		else
+			.currentTarget_PhiList[.i] = extractNumber(.phiTargetList$ [.i], "")
+		endif
+		if index_regex(.pitchTargetList$ [.i] ,"^[^0-9+-]")
+			@readSpeakerProfile: speakerDataTable, .pitchTargetList$ [.i], currentReference$
+			.currentTarget_PitchList[.i] = readSpeakerProfile.pitch
+		else
+			.currentTarget_PitchList[.i] = extractNumber(.pitchTargetList$ [.i], "")
+		endif
+		
+		if index_regex(.rateTargetList$ [.i] ,"^[^0-9+-]")
+			@readSpeakerProfile: speakerDataTable, .rateTargetList$ [.i], currentReference$
+			.currentTarget_RateList[.i] = readSpeakerProfile.rate
+		else
+			.currentTarget_RateList[.i] = extractNumber(.rateTargetList$ [.i], "")
+		endif
+		
+		if index_regex(.randomize_bandsList$ [.i], "[a-eg-zA-EG-Z]") and index_regex(.phiTargetList$ [.i] ,"^[^0-9+-]")
+			@readSpeakerProfile: speakerDataTable, .randomize_bandsList$ [.i], currentReference$
+			.currentRandomize_bandsList$ [.i] = readSpeakerProfile.randomize_bands$
+		else
+			.currentRandomize_bandsList$ [.i] = .randomize_bandsList$ [.i]
+		endif
+		
+		if index_regex(.randomize_intensityList$ [.i], "[a-eg-zA-EG-Z]") and index_regex(.phiTargetList$ [.i] ,"^[^0-9+-]")
+			@readSpeakerProfile: speakerDataTable, .randomize_intensityList$ [.i], currentReference$
+			.currentRandomize_intensityList$ [.i] = readSpeakerProfile.randomize_intensity$
+		else
+			.currentRandomize_intensityList$ [.i] = .randomize_intensityList$ [.i]
+		endif
+		
+	endfor		
+	
+	# Process all sourcefiles
 	for .f to .numSourceFiles
 		selectObject: .sourceList
 		.fileName$ = Get string: .f
@@ -346,7 +421,9 @@ for .control to .numControlLines
 			.current_Phi = .currentTarget_PhiList[.i]
 			.current_Pitch = .currentTarget_PitchList[.i]
 			.current_Rate = .currentTarget_RateList[.i]
-			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, current_Randomize_bands$, current_Randomize_intensity$
+			.current_Randomize_bands$ = .currentRandomize_bandsList$ [.i]
+			.current_Randomize_intensity$ = .currentRandomize_intensityList$ [.i]
+			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, .current_Randomize_bands$, .current_Randomize_intensity$
 			.target = createPseudonymousSpeech.target
 			.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.wav", 0)
 			if currentTarget_Directory$ <> ""
@@ -762,6 +839,45 @@ procedure bandIntensityMeasures .sound .phi
 	selectObject: .normalizedSound
 	Remove
 endproc
+
+###############################################################
+lastRandom$ = ""
+procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
+	selectObject: .speakerProfiles
+	.numRows = Get number of rows
+	if .speaker$ = "Random"
+		if lastRandom$ <> ""
+			.speaker$ = lastRandom$
+		else
+			while .speaker$ = "Random" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]")
+				.dataRow = randomInteger(1, .numRows)
+				.speaker$ = Get value: .dataRow, "Reference"
+			endwhile
+			lastRandom$ = .speaker$
+		endif
+	else
+		.dataRow = Search column: "Reference", .speaker$
+	endif
+	if .dataRow <= 0
+		exitScript: "Speaker not found: ", .speaker$
+	endif
+	
+	.pitch = Get value: .dataRow, "MedianPitch"
+	.phi = Get value: .dataRow, "Phi"
+	.phi2 = Get value: .dataRow, "Phi2"
+	.phi3 = Get value: .dataRow, "Phi3"
+	.phi4 = Get value: .dataRow, "Phi4"
+	.phi5 = Get value: .dataRow, "Phi5"
+	.rate = Get value: .dataRow, "ArtRate"
+
+	.randomize_bands$ = "F0='.phi', F1='.phi', F2='.phi2', F3='.phi3', F4='.phi4', F5='.phi5'"
+
+	for .i from 0 to 5
+		.int'.i' = Get value: .dataRow, "Int'.i'"
+	endfor
+	.randomize_intensity$ = "F0='.int0', F1='.int1', F2='.int2', F3='.int3', F4='.int4', F5='.int5'"
+endproc 
+
 
 ###############################################################
 
