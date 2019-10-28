@@ -585,7 +585,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyInt'.i' > 0 and modifyInt'.i' < 1000
 			.target_Int'.i' = modifyInt'.i'
 		elsif modifyInt'.i' > 0 and .int'.i' > 0
-			.target_Int'.i' = .meanIntensities# [.i + 1] + randomUniform(-.rangeIntensities# [.i + 1], .rangeIntensities# [.i + 1)
+			.target_Int'.i' = .meanIntensities# [.i + 1] + randomUniform(-.rangeIntensities# [.i + 1], .rangeIntensities# [.i + 1])
 		endif
 	endfor
 	
