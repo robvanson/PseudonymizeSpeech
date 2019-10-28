@@ -271,8 +271,8 @@ for .control to .numControlLines
 	endwhile
 	
 	# Fill in the targets
-	lastRandom$ = ""
 	for .i to .numTargets
+		lastRandom$ = ""
 		if index_regex(.phiTargetList$ [.i] ,"^[^0-9+-]")			
 			@readSpeakerProfile: speakerDataTable, .phiTargetList$ [.i], currentReference$
 			.currentTarget_PhiList[.i] = readSpeakerProfile.phi
@@ -567,7 +567,6 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	.meanIntensities# = {64, 67, 58, 50, 47, 45}
 	.rangeIntensities# = {4.5, 2.5, 4.5, 8, 10, 9}
 
-	.compensateFiltering = 0
 	for .i from 0 to 5
 		# Set band frequency targets
 		.target_Phi'.i' = -1;
@@ -584,10 +583,8 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		# Set band intensity targets
 		.target_Int'.i' = 70
 		if modifyInt'.i' > 0 and modifyInt'.i' < 1000
-			.compensateFiltering += 1
 			.target_Int'.i' = modifyInt'.i'
 		elsif modifyInt'.i' > 0 and .int'.i' > 0
-			.compensateFiltering += 1
 			.target_Int'.i' = .meanIntensities# [.i + 1] + randomUniform(-.rangeIntensities# [.i + 1], .rangeIntensities# [.i + 1)
 		endif
 	endfor
