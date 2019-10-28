@@ -564,6 +564,9 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	Rename: "Pseudonymized"
 	
 	# Initialize
+	.meanIntensities# = {64, 67, 58, 50, 47, 45}
+	.rangeIntensities# = {4.5, 2.5, 4.5, 8, 10, 9}
+
 	.compensateFiltering = 0
 	for .i from 0 to 5
 		# Set band frequency targets
@@ -571,7 +574,11 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyF0 > 1
 			.target_Phi'.i' = modifyF'.i'
 		elsif modifyF'.i'
-			.target_Phi'.i' = randomUniform(.target_Phi - 75, .target_Phi + 75)
+			.range = 75
+			if .i <= 1
+				.range = 40
+			endif
+			.target_Phi'.i' = randomUniform(.target_Phi - .range, .target_Phi + .range)
 		endif
 		
 		# Set band intensity targets
@@ -581,7 +588,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 			.target_Int'.i' = modifyInt'.i'
 		elsif modifyInt'.i' > 0 and .int'.i' > 0
 			.compensateFiltering += 1
-			.target_Int'.i' = .int'.i' + randomUniform(-6, 6)
+			.target_Int'.i' = .meanIntensities# [.i + 1] + randomUniform(-.rangeIntensities# [.i + 1], .rangeIntensities# [.i + 1)
 		endif
 	endfor
 	

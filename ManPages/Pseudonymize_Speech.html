@@ -12,9 +12,9 @@ Running the script</h3>
 When running the script, a form will appear with the following fields:</p>
 <ul>
 <li>
-&nbsp;<i>Source</i><i></i>: Path to the audio file to change. May contain a wildcard character (*) or end in a "/", in which case all the matching files will be pseudonymized. If the file name ends in <code>.tsv</code> or <code>.csv</code>, this is interpreted as a table from which the values needed are read.
+&nbsp;<i>Source</i><i></i>: Path to the audio file to change. The path may contain a (one!) wildcard character (*) or end in a "/", in which case all the matching files will be pseudonymized. If the file name ends in <code>.tsv</code> or <code>.csv</code>, this is interpreted as a table from which the values needed are read. This table allows to automate pseudonymization of a large number of recordings. 
 <li>
-&nbsp;<i>Reference</i>: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are calculated. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. May contain a wild card character (*), end in a "/", or point to a <code>.tsv</code> or <code>.csv</code> file with a table of speaker values. If <i>Reference</i> is <code>-</code>, the source file is used to determine the speaker characteristics.
+&nbsp;<i>Reference</i>: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are measured to construct a <i>speaker profile</i>. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. The path may contain a (one!) wild card character (*), end in a "/", or point to a <code>.tsv</code> or <code>.csv</code> file with a table of speaker values. If <i>Reference</i> is <code>-</code>, the source file is used to determine the speaker characteristics.
 <li>
 &nbsp;<i>Target Phi</i>: (&#966;) The "neutral" F<sub>1</sub> value corresponding to the target vocal tract length.
 <li>
@@ -62,10 +62,18 @@ If the <i>Source</i> is not a path to soundfiles, it can be a path to a <code>.c
 <li>
 &nbsp;<code>Target_Directory</code>: The path to the directory where the resulting audio is written to.
 </ul>
+<p>
+Optional columns:</p>
+<ul>
+<li>
+&nbsp;<code>Randomize_bands</code>: A list of bands, F0-F5, which will be frequency shifted by random amounts.
+<li>
+&nbsp;<code>Randomize_intensities</code>: A list of bands, F0-F5, which will be intensity shifted by random amounts (in dB).
+</ul>
 <h3>
 Reference</h3>
 <p>
-If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code>.csv</code> or <code>.tsv</code> table. Such a table should have the following column labels: </p>
+If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code>.csv</code> or <code>.tsv</code> table containing <i>speaker profiles</i>. Such a table should have the following column labels: </p>
 <p>
 <code>Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration</code></p>
 <ul>
@@ -107,13 +115,13 @@ These fields accept a list of comma separated values, e.g.,</p>
 <p>
 These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 120, 3.8), then the second of each list (550, 150, 4.0), then the third (585, 185, 4.2), etc. If one list ends before the others, the last value is reused. A value of "0" for any of these indicates that the corresponding reference value, &#966;, median F0, or articulation rate, will be used, i.e., no change. </p>
 <p>
-If a <i>label</i> of a speaker is entered in the <i>Target Phi</i> field, its profile will be copied into this and the other fields, including the <i>Randomization</i> fields. Effectively, the system will convert the input speech into speech of the target speaker. It is best to empty all the other fields in this case. </p>
+If a <i>label</i> of a speaker is entered in the <i>Target Phi</i> field, its profile will be copied into this and the other fields, including the <i>Randomization</i> fields. Effectively, the system will convert the input speech using the parameters of the target speaker. It is best to empty all the other fields in this case. </p>
 <h3>
 Randomize bands and Randomize intensity</h3>
 <p>
-A list of frequency bands, e.g., "F0, F3, F4, F5" for which the frequency or intensity is shifted by random amounts. It is possible to fix the target values of these bands by entering the target &#966; value (neutral F<sub>1</sub>, roughly between 500-600 Hz) or intensity (roughly between 45-70 dB) to hold for that band. For instance, <i>Randomize bands</i> "F0 = 550, F3=510, F4 = 570, F5=540" (Hz) or <i>Randomize intensity</i> "F0 = 65, F3=50, F4 = 43, F5=44" (dB).</p>
+A list of frequency bands, e.g., "F0, F3, F4, F5" for which the frequency or intensity is shifted by random amounts. Only a single such list can be entered. It is possible to fix the target values of these bands by entering the target &#966; value (neutral F<sub>1</sub>, roughly between 500-600 Hz) or intensity (roughly between 45-70 dB) to hold for that band. For instance, <i>Randomize bands</i> "F0 = 550, F3=510, F4 = 570, F5=540" (Hz) or <i>Randomize intensity</i> "F0 = 65, F3=50, F4 = 43, F5=44" (dB).</p>
 <p>
-Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 550, 530, 530, 510, 560</i> &#177;50 Hz and corresponding intensities: <i>65, 65, 55, 50, 43, 44</i> &#177;9 dB. </p>
+Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 550, 530, 530, 510, 560</i> &#177;50 Hz and corresponding intensities: <i>64&#177;4.5, 67&#177;2.5, 58&#177;4.5, 50&#177;8, 47&#177;10, 45&#177;9</i> dB (&#177;2SD). For randomization of frequency bands, &#966;&#177;40 and &#966;&#177;75 Hz are used for F0-1 and F2-5, respectively. For randomization of intensities, the above example value are used, inclucing the 2SD values as ranges. </p>
 <h3>
 <i>References</i></h3>
 <p>
