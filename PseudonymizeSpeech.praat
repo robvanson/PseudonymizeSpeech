@@ -164,6 +164,10 @@ for .control to .numControlLines
 	selectObject: controlTable
 	.tmp$ = Get value: .control, "Source"
 	currentSource$ = source$
+	# Skip lines
+	if index_regex(.tmp$, "^\s*#")
+		goto NEXTLINE
+	endif 
 	if .tmp$ <> "" and .tmp$ <> "-"
 		currentSource$ = .tmp$;
 	endif
@@ -453,6 +457,8 @@ for .control to .numControlLines
 		selectObject: speakerDataTable
 		Save as tab-separated file: saveReferenceTableName$
 	endif
+	
+	label NEXTLINE
 endfor
 if saveReferenceTableName$ <> ""
 	selectObject: speakerDataTable
