@@ -13,6 +13,7 @@ ManPagesTextFile
 <list_item> "\bu %%Randomize bands%: A list of bands, F0-F5, which will be frequency shifted by random amounts. The F__0_ band is from [0, \fi/2]. The other bands are stacked above each other every 2 times \fi. F__1_: [\fi/2, 2\.c\fi], F__2_: [2\.c\fi, 4\.c\fi] and so on to F__5_: [8\.c\fi, 10\.c\fi]"
 <list_item> "\bu %%Randomize intensity%: A list of bands, F0-F5, which will be intensity shifted by random amounts (in dB). The F__0_ band is from [0, \fi/2]. The other bands are stacked above each other every 2 times \fi. F__1_: [\fi/2, 2\.c\fi], F__2_: [2\.c\fi, 4\.c\fi] and so on to F__5_: [8\.c\fi, 10\.c\fi]"
 <list_item> "\bu %%Remove pauses%: A check box to indicate whether pauses in the source audio are removed or not."
+<list_item> "\bu %%Output format%: A choice of output formats, WAV or FLAC."
 <normal> "Buttons:" 
 <list_item> "\bu %%Stop%: Abort the script."
 <list_item> "\bu %%Help%: Open this manual instead of running the script."
