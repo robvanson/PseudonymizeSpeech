@@ -32,6 +32,9 @@ beginPause: "Select recordings"
 	sentence: "Randomize bands", "F0, F3, F4, F5"
 	sentence: "Randomize intensity", "F0, F3, F4, F5"
 	boolean: "Remove_pauses", 0
+	optionMenu: "Output format", 1
+		option: "WAV"
+		option: "FLAC"
 clicked = endPause: "Help", "Continue", 2
 
 if clicked = 1
@@ -53,6 +56,7 @@ endif
 target_Phi$ = replace$(target_Phi$, " (Hz)", "", 0)
 target_Pitch$ = replace$(target_Pitch$, " (Hz)", "", 0)
 target_Rate$ = replace$(target_Rate$, " (Syll/s)", "", 0)
+output_format$ = replace_regex$(output_format$, "^.*$", "\L&", 0)
 
 debugON = 1
 # If this name is <> "", save the table
@@ -163,11 +167,11 @@ for .control to .numControlLines
 	# Read values
 	selectObject: controlTable
 	.tmp$ = Get value: .control, "Source"
-	currentSource$ = source$
 	# Skip lines
 	if index_regex(.tmp$, "^\s*#")
 		goto NEXTLINE
 	endif 
+	currentSource$ = source$
 	if .tmp$ <> "" and .tmp$ <> "-"
 		currentSource$ = .tmp$;
 	endif
@@ -429,7 +433,7 @@ for .control to .numControlLines
 			.current_Randomize_intensity$ = .currentRandomize_intensityList$ [.i]
 			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, .current_Randomize_bands$, .current_Randomize_intensity$
 			.target = createPseudonymousSpeech.target
-			.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.wav", 0)
+			.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.'output_format$'", 0)
 			if currentTarget_Directory$ <> ""
 				.k = 0
 				.appx$ = ""
@@ -439,7 +443,11 @@ for .control to .numControlLines
 					.appx$ = "_'.k'"
 					.targetFilename$ = replace_regex$(.targetFilename$, .prevAppx$+"(\.[^\.]+)$", .appx$+"\1", 0)
 				endwhile
-				nowarn Save as WAV file: currentTarget_Directory$+"/"+.targetFilename$
+				if endsWith(.targetFilename$, "flac")
+					nowarn Save as FLAC file: currentTarget_Directory$+"/"+.targetFilename$
+				else
+					nowarn Save as WAV file: currentTarget_Directory$+"/"+.targetFilename$
+				endif
 			endif
 			appendInfoLine: .sourceDirectory$+"/"+.targetFilename$
 
