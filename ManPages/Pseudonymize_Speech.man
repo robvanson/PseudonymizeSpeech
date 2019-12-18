@@ -58,7 +58,7 @@ ManPagesTextFile
 
 <entry> "Randomize bands and Randomize intensity"
 <normal> "A list of frequency bands, e.g., ""F0, F3, F4, F5"" for which the frequency or intensity is shifted by random amounts. Only a single such list can be entered. It is possible to fix the target values of these bands by entering the target \fi value (neutral F__1_, roughly between 500-600 Hz) or intensity (roughly between 45-70 dB) to hold for that band. For instance, %%Randomize bands% ""F0 = 550, F3=510, F4 = 570, F5=540"" (Hz) or %%Randomize intensity% ""F0 = 65, F3=50, F4 = 43, F5=44"" (dB)."
-<normal> "Example frequency values for F0-F5 for a speaker could be, frequencies: %%550, 550, 530, 530, 510, 560% \+-50 Hz and corresponding intensities: %%64\+-4.5, 67\+-2.5, 58\+-4.5, 50\+-8, 47\+-10, 45\+-9% dB (\+-2SD). For randomization of frequency bands, \fi\+-40 and \fi\+-75 Hz are used for F0-1 and F2-5, respectively. For randomization of intensities, the above example value are used, inclucing the 2SD values as ranges. "
+<normal> "Example frequency values for F0-F5 for a speaker could be, frequencies: %%550, 550, 530, 530, 510, 560% \+-50 Hz and corresponding intensities: %%64\+-4.5, 67\+-2.5, 58\+-4.5, 50\+-8, 47\+-10, 45\+-9% dB (\+-2SD). For randomization of frequency bands, \fi\+-40 and \fi\+-75 Hz are used for F0-1 and F2-5, respectively. For randomization of intensities, the above example values are used, including the 2SD values as ranges. "
 
 <entry> "%%References%"
 <normal> "[1] Lammert AC, Narayanan SS. %%On Short-Time Estimation of Vocal Tract Length from Formant Frequencies%. PLOS ONE. 2015 Jul 15;10(7):e0132193. "
