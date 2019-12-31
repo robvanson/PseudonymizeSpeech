@@ -242,13 +242,13 @@ for .control to .numControlLines
 		.prev = max(.numTargets, 1)
 		.numTargets += 1
 		
-		if .phiTargets$ <> ""
+		if .phiTargets$ <> "" and .phiTargets$ <> "0"
 			.phiTargetList$ [.numTargets] = replace_regex$(.phiTargets$, "^([^;, ]+).*$", "\1", 0)
 			.phiTargets$ = replace_regex$(.phiTargets$, "^[^;, ]+[,;]?", "", 0)
 		else
 			.phiTargetList$ [.numTargets] = .phiTargetList$ [.prev]
 		endif
-		if .pitchTargets$ <> ""
+		if .pitchTargets$ <> "" and .pitchTargets$ <> "0"
 			.pitchTargetList$ [.numTargets] = replace_regex$(.pitchTargets$, "^([^;, ]+).*$", "\1", 0)
 			.pitchTargets$ = replace_regex$(.pitchTargets$, "^[^;, ]+[,;]?", "", 0)
 		else
@@ -257,8 +257,9 @@ for .control to .numControlLines
 			else
 				.pitchTargetList$ [.numTargets] = .pitchTargetList$ [.prev]
 			endif
+			.pitchTargets$ = ""
 		endif
-		if .rateTargets$ <> ""
+		if .rateTargets$ <> "" and .rateTargets$ <> "0"
 			.rateTargetList$ [.numTargets] = replace_regex$(.rateTargets$, "^([^;, ]+).*$", "\1", 0)
 			.rateTargets$ = replace_regex$(.rateTargets$, "^[^;, ]+[,;]?", "", 0)
 		else
@@ -267,6 +268,7 @@ for .control to .numControlLines
 			else
 				.rateTargetList$ [.numTargets] = .rateTargetList$ [.prev]
 			endif
+			.rateTargets$ = ""
 		endif
 		# If a reference speaker is entered, surpress randomization
 		if index_regex(.phiTargetList$ [.numTargets] ,"^[^0-9+-]")
@@ -433,7 +435,8 @@ for .control to .numControlLines
 			.current_Randomize_intensity$ = .currentRandomize_intensityList$ [.i]
 			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, .current_Randomize_bands$, .current_Randomize_intensity$
 			.target = createPseudonymousSpeech.target
-			.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.'output_format$'", 0)
+			.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc|flac))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.'output_format$'", 0)
+
 			if currentTarget_Directory$ <> ""
 				.k = 0
 				.appx$ = ""
@@ -443,6 +446,7 @@ for .control to .numControlLines
 					.appx$ = "_'.k'"
 					.targetFilename$ = replace_regex$(.targetFilename$, .prevAppx$+"(\.[^\.]+)$", .appx$+"\1", 0)
 				endwhile
+				createDirectory: currentTarget_Directory$
 				if endsWith(.targetFilename$, "flac")
 					nowarn Save as FLAC file: currentTarget_Directory$+"/"+.targetFilename$
 				else
@@ -510,8 +514,16 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		.index = Get column index: "Int'.i'"
 		if .index > 0
 			.int'.i' = Get value: .dataRow, "Int'.i'"
+			if .int'.i' <= 0
+				.int'.i' = -1
+			endif
 		else
 			.int'.i' = -1
+		endif
+	endfor
+	for .i from 2 to 5
+		if .phi'.i' <= 0
+			.phi'i' = .phi
 		endif
 	endfor
 	
@@ -541,6 +553,9 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 					else
 						modifyF'.i' = .phi'.i'
 					endif
+				endif
+				if modifyF'.i' <= 0
+					modifyF'.i' = .phi
 				endif
 			endif
 		endif
@@ -584,7 +599,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	for .i from 0 to 5
 		# Set band frequency targets
 		.target_Phi'.i' = -1;
-		if modifyF0 > 1
+		if modifyF'.i' > 1
 			.target_Phi'.i' = modifyF'.i'
 		elsif modifyF'.i'
 			.range = 75
