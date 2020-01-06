@@ -163,6 +163,7 @@ for .control to .numControlLines
 	.currentTarget_RateList [1] = -1
 	.currentRandomize_bandsList$ [1] = ""
 	.currentRandomize_intensityList$ [1] = ""
+	.currentnameList$ [1] = "-"
 	
 	# Read values
 	selectObject: controlTable
@@ -286,12 +287,15 @@ for .control to .numControlLines
 		if index_regex(.phiTargetList$ [.i] ,"^[^0-9+-]")			
 			@readSpeakerProfile: speakerDataTable, .phiTargetList$ [.i], currentReference$
 			.currentTarget_PhiList[.i] = readSpeakerProfile.phi
+			.currentnameList$ [.i] = .phiTargetList$ [.i];
 		else
 			.currentTarget_PhiList[.i] = extractNumber(.phiTargetList$ [.i], "")
+			.currentnameList$ [.i] = "-";
 		endif
 		if index_regex(.pitchTargetList$ [.i] ,"^[^0-9+-]")
 			@readSpeakerProfile: speakerDataTable, .pitchTargetList$ [.i], currentReference$
 			.currentTarget_PitchList[.i] = readSpeakerProfile.pitch
+			.currentnameList$ [.i] = .pitchTargetList$ [.i];
 		else
 			.currentTarget_PitchList[.i] = extractNumber(.pitchTargetList$ [.i], "")
 		endif
@@ -299,6 +303,7 @@ for .control to .numControlLines
 		if index_regex(.rateTargetList$ [.i] ,"^[^0-9+-]")
 			@readSpeakerProfile: speakerDataTable, .rateTargetList$ [.i], currentReference$
 			.currentTarget_RateList[.i] = readSpeakerProfile.rate
+			.currentnameList$ [.i] = .rateTargetList$ [.i];
 		else
 			.currentTarget_RateList[.i] = extractNumber(.rateTargetList$ [.i], "")
 		endif
@@ -435,7 +440,12 @@ for .control to .numControlLines
 			.current_Randomize_intensity$ = .currentRandomize_intensityList$ [.i]
 			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, .current_Randomize_bands$, .current_Randomize_intensity$
 			.target = createPseudonymousSpeech.target
-			.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc|flac))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.'output_format$'", 0)
+			if .currentnameList$ [.i] = "-" or .currentnameList$ [.i] = ""
+				.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc|flac))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.'output_format$'", 0)
+			else
+				.tmpName$ = .currentnameList$ [.i]
+				.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc|flac))$", "_'.tmpName$'.'output_format$'", 0)
+			endif
 
 			if currentTarget_Directory$ <> ""
 				.k = 0
