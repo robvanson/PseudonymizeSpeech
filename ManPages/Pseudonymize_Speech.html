@@ -28,9 +28,11 @@ When running the script, a form will appear with the following fields:</p>
 <li>
 &nbsp;<i>Randomize intensity</i>: A list of bands, F0-F5, which will be intensity shifted by random amounts (in dB). The F<sub>0</sub> band is from [0, &#966;/2]. The other bands are stacked above each other every 2 times &#966;. F<sub>1</sub>: [&#966;/2, 2&#183;&#966;], F<sub>2</sub>: [2&#183;&#966;, 4&#183;&#966;] and so on to F<sub>5</sub>: [8&#183;&#966;, 10&#183;&#966;]
 <li>
+&nbsp;<i>Output format</i>: A choice of output formats, WAV or FLAC.
+<li>
 &nbsp;<i>Remove pauses</i>: A check box to indicate whether pauses in the source audio are removed or not.
 <li>
-&nbsp;<i>Output format</i>: A choice of output formats, WAV or FLAC.
+&nbsp;<i>Ignore freq bands</i>: A check box to indicate whether frequency and intensity in the F0-F5 band should not be changed. If this box is checked, only the vocal tract length (<i>Target Phi</i>), pitch, and rate are changed.
 </ul>
 <p>
 Buttons:</p>
@@ -123,7 +125,9 @@ Randomize bands and Randomize intensity</h3>
 <p>
 A list of frequency bands, e.g., "F0, F3, F4, F5" for which the frequency or intensity is shifted by random amounts. Only a single such list can be entered. It is possible to fix the target values of these bands by entering the target &#966; value (neutral F<sub>1</sub>, roughly between 500-600 Hz) or intensity (roughly between 45-70 dB) to hold for that band. For instance, <i>Randomize bands</i> "F0 = 550, F3=510, F4 = 570, F5=540" (Hz) or <i>Randomize intensity</i> "F0 = 65, F3=50, F4 = 43, F5=44" (dB).</p>
 <p>
-Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 550, 530, 530, 510, 560</i> &#177;50 Hz and corresponding intensities: <i>64&#177;4.5, 67&#177;2.5, 58&#177;4.5, 50&#177;8, 47&#177;10, 45&#177;9</i> dB (&#177;2SD). For randomization of frequency bands, &#966;&#177;40 and &#966;&#177;75 Hz are used for F0-1 and F2-5, respectively. For randomization of intensities, the above example value are used, inclucing the 2SD values as ranges. </p>
+Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 550, 530, 530, 510, 560</i> &#177;50 Hz and corresponding intensities: <i>64&#177;4.5, 67&#177;2.5, 58&#177;4.5, 50&#177;8, 47&#177;10, 45&#177;9</i> dB (&#177;2SD). For randomization of frequency bands, &#966;&#177;40 and &#966;&#177;75 Hz are used for F0-1 and F2-5, respectively. For randomization of intensities, the above example values are used, including the 2SD values as ranges. </p>
+<p>
+The <i>Ignore freq bands</i> checkbox is supplied to suppress all individual frequency band and intensity changes. This option is most usefull in testing the effectivity of frequency band and intesity changes.</p>
 <h3>
 <i>References</i></h3>
 <p>

@@ -31,10 +31,12 @@ beginPause: "Select recordings"
 	sentence: "Target Directory", "pseudonymized"
 	sentence: "Randomize bands", "F0, F3, F4, F5"
 	sentence: "Randomize intensity", "F0, F3, F4, F5"
-	boolean: "Remove_pauses", 0
 	optionMenu: "Output format", 1
 		option: "WAV"
 		option: "FLAC"
+	boolean: "Remove_pauses", 0
+	boolean: "Ignore_freq_bands", 0
+	
 clicked = endPause: "Help", "Continue", 2
 
 if clicked = 1
@@ -438,7 +440,7 @@ for .control to .numControlLines
 			.current_Rate = .currentTarget_RateList[.i]
 			.current_Randomize_bands$ = .currentRandomize_bandsList$ [.i]
 			.current_Randomize_intensity$ = .currentRandomize_intensityList$ [.i]
-			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, .current_Randomize_bands$, .current_Randomize_intensity$
+			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, .current_Randomize_bands$, .current_Randomize_intensity$, ignore_freq_bands
 			.target = createPseudonymousSpeech.target
 			if .currentnameList$ [.i] = "-" or .currentnameList$ [.i] = ""
 				.targetFilename$ = replace_regex$(.fileName$, "\.((?iwav|aifc|flac))$", "_'.current_Phi:0'-'.current_Pitch:0'-'.current_Rate:1'.'output_format$'", 0)
@@ -509,7 +511,7 @@ Remove
 ###############################################################
 
 # Pseudonymize recording
-procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .target_Pitch .target_Rate .randomize_bands$ .randomize_intensity$
+procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .target_Pitch .target_Rate .randomize_bands$ .randomize_intensity$ .ignore_freq_bands
 
 	# Get spreaker characteristics from the reference recording
 	selectObject: .refData
@@ -602,162 +604,167 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	Scale intensity: 70.0
 	Rename: "Pseudonymized"
 	
-	# Initialize
-	.meanIntensities# = {64, 67, 58, 50, 47, 45}
-	.rangeIntensities# = {4.5, 2.5, 4.5, 8, 10, 9}
-
-	for .i from 0 to 5
-		# Set band frequency targets
-		.target_Phi'.i' = -1;
-		if modifyF'.i' > 1
-			.target_Phi'.i' = modifyF'.i'
-		elsif modifyF'.i'
-			.range = 75
-			if .i <= 1
-				.range = 40
+	# Just ignore anything related to individual frequency bands
+	if .ignore_freq_bands
+	
+		# Initialize
+		.meanIntensities# = {64, 67, 58, 50, 47, 45}
+		.rangeIntensities# = {4.5, 2.5, 4.5, 8, 10, 9}
+	
+		for .i from 0 to 5
+			# Set band frequency targets
+			.target_Phi'.i' = -1;
+			if modifyF'.i' > 1
+				.target_Phi'.i' = modifyF'.i'
+			elsif modifyF'.i'
+				.range = 75
+				if .i <= 1
+					.range = 40
+				endif
+				.target_Phi'.i' = randomUniform(.target_Phi - .range, .target_Phi + .range)
 			endif
-			.target_Phi'.i' = randomUniform(.target_Phi - .range, .target_Phi + .range)
-		endif
+			
+			# Set band intensity targets
+			.target_Int'.i' = 70
+			if modifyInt'.i' > 0 and modifyInt'.i' < 1000
+				.target_Int'.i' = modifyInt'.i'
+			elsif modifyInt'.i' > 0 and .int'.i' > 0
+				.target_Int'.i' = .meanIntensities# [.i + 1] + randomUniform(-.rangeIntensities# [.i + 1], .rangeIntensities# [.i + 1])
+			endif
+		endfor
 		
-		# Set band intensity targets
-		.target_Int'.i' = 70
-		if modifyInt'.i' > 0 and modifyInt'.i' < 1000
-			.target_Int'.i' = modifyInt'.i'
-		elsif modifyInt'.i' > 0 and .int'.i' > 0
-			.target_Int'.i' = .meanIntensities# [.i + 1] + randomUniform(-.rangeIntensities# [.i + 1], .rangeIntensities# [.i + 1])
-		endif
-	endfor
+		# Change F0 band
+		if modifyF0 or modifyInt0
+			selectObject: .sourceSound
+			if modifyF0
+				.intermediateSoundF0 = noprogress Change gender: 60, 600, .target_Phi0 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
+			else
+				selectObject: .target
+				.intermediateSoundF0 = Copy: "CleanCopy"
+			endif
+			Scale intensity: 70 + (.target_Int0 - .int0)
+			Rename: "IntermediatePseudonymizedF0"
 	
-	# Change F0 band
-	if modifyF0 or modifyInt0
-		selectObject: .sourceSound
-		if modifyF0
-			.intermediateSoundF0 = noprogress Change gender: 60, 600, .target_Phi0 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
-		else
+			@replaceBand: .target, .intermediateSoundF0, 0, .target_Phi / 2
+			
+			selectObject: .target, .intermediateSoundF0
+			Remove
+			.target = replaceBand.target
 			selectObject: .target
-			.intermediateSoundF0 = Copy: "CleanCopy"
+			Scale intensity: 70.0
+			Rename: "Pseudonymized"
 		endif
-		Scale intensity: 70 + (.target_Int0 - .int0)
-		Rename: "IntermediatePseudonymizedF0"
-
-		@replaceBand: .target, .intermediateSoundF0, 0, .target_Phi / 2
-		
-		selectObject: .target, .intermediateSoundF0
-		Remove
-		.target = replaceBand.target
-		selectObject: .target
-		Scale intensity: 70.0
-		Rename: "Pseudonymized"
-	endif
-
-	# Change F1 band
-	if modifyF1 or modifyInt1
-		selectObject: .sourceSound
-		if modifyF1
-			.intermediateSoundF1 = noprogress Change gender: 60, 600, .target_Phi1 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
-		else
-			selectObject: .target
-			.intermediateSoundF1 = Copy: "CleanCopy"
-		endif
-		Scale intensity:  70 + (.target_Int1 - .int1)
-		Rename: "IntermediatePseudonymizedF1"
-
-		@replaceBand: .target, .intermediateSoundF1, .target_Phi / 2, 2*.target_Phi
-		
-		selectObject: .target, .intermediateSoundF1
-		Remove
-		.target = replaceBand.target
-		selectObject: .target
-		Scale intensity: 70.0
-		Rename: "Pseudonymized"
-	endif
 	
-	# Change F2 band
-	if modifyF2 or modifyInt2
-		selectObject: .sourceSound
-		if modifyF2
-			.intermediateSoundF2 = noprogress Change gender: 60, 600, .target_Phi2 / .phi2, .target_Pitch, 1, .artRate / .target_Rate 
-		else
-			selectObject: .target
-			.intermediateSoundF2 = Copy: "CleanCopy"
-		endif
-		Scale intensity:  70 + (.target_Int2 - .int2)
-		Rename: "IntermediatePseudonymizedF2"
-
-		@replaceBand: .target, .intermediateSoundF2, 2*.target_Phi, 4*.target_Phi
-		
-		selectObject: .target, .intermediateSoundF2
-		Remove
-		.target = replaceBand.target
-		selectObject: .target
-		Scale intensity: 70.0
-		Rename: "Pseudonymized"
-	endif
+		# Change F1 band
+		if modifyF1 or modifyInt1
+			selectObject: .sourceSound
+			if modifyF1
+				.intermediateSoundF1 = noprogress Change gender: 60, 600, .target_Phi1 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
+			else
+				selectObject: .target
+				.intermediateSoundF1 = Copy: "CleanCopy"
+			endif
+			Scale intensity:  70 + (.target_Int1 - .int1)
+			Rename: "IntermediatePseudonymizedF1"
 	
-	# Change F3 band
-	if modifyF3 or modifyInt3
-		selectObject: .sourceSound
-		if modifyF3
-			.intermediateSoundF3 = noprogress Change gender: 60, 600, .target_Phi3 / .phi3, .target_Pitch, 1, .artRate / .target_Rate 
-		else
+			@replaceBand: .target, .intermediateSoundF1, .target_Phi / 2, 2*.target_Phi
+			
+			selectObject: .target, .intermediateSoundF1
+			Remove
+			.target = replaceBand.target
 			selectObject: .target
-			.intermediateSoundF3 = Copy: "CleanCopy"
+			Scale intensity: 70.0
+			Rename: "Pseudonymized"
 		endif
-		Scale intensity:  70 + (.target_Int3 - .int3)
-		Rename: "IntermediatePseudonymizedF3"
-
-		@replaceBand: .target, .intermediateSoundF3, 4*.target_Phi, 6*.target_Phi
 		
-		selectObject: .target, .intermediateSoundF3
-		Remove
-		.target = replaceBand.target
-		selectObject: .target
-		Scale intensity: 70.0
-		Rename: "Pseudonymized"
-	endif
+		# Change F2 band
+		if modifyF2 or modifyInt2
+			selectObject: .sourceSound
+			if modifyF2
+				.intermediateSoundF2 = noprogress Change gender: 60, 600, .target_Phi2 / .phi2, .target_Pitch, 1, .artRate / .target_Rate 
+			else
+				selectObject: .target
+				.intermediateSoundF2 = Copy: "CleanCopy"
+			endif
+			Scale intensity:  70 + (.target_Int2 - .int2)
+			Rename: "IntermediatePseudonymizedF2"
 	
-	# Change F4 band
-	if modifyF4 or modifyInt4
-		selectObject: .sourceSound
-		if modifyF4
-			.intermediateSoundF4 = noprogress Change gender: 60, 600, .target_Phi4 / .phi4, .target_Pitch, 1, .artRate / .target_Rate 
-		else
+			@replaceBand: .target, .intermediateSoundF2, 2*.target_Phi, 4*.target_Phi
+			
+			selectObject: .target, .intermediateSoundF2
+			Remove
+			.target = replaceBand.target
 			selectObject: .target
-			.intermediateSoundF4 = Copy: "CleanCopy"
+			Scale intensity: 70.0
+			Rename: "Pseudonymized"
 		endif
-		Scale intensity:  70 + (.target_Int4 - .int4)
-		Rename: "IntermediatePseudonymizedF4"
-
-		@replaceBand: .target, .intermediateSoundF4, 6*.target_Phi, 8*.target_Phi
 		
-		selectObject: .target, .intermediateSoundF4
-		Remove
-		.target = replaceBand.target
-		selectObject: .target
-		Scale intensity: 70.0
-		Rename: "Pseudonymized"
-	endif
+		# Change F3 band
+		if modifyF3 or modifyInt3
+			selectObject: .sourceSound
+			if modifyF3
+				.intermediateSoundF3 = noprogress Change gender: 60, 600, .target_Phi3 / .phi3, .target_Pitch, 1, .artRate / .target_Rate 
+			else
+				selectObject: .target
+				.intermediateSoundF3 = Copy: "CleanCopy"
+			endif
+			Scale intensity:  70 + (.target_Int3 - .int3)
+			Rename: "IntermediatePseudonymizedF3"
 	
-	# Change F5 band
-	if modifyF5 or modifyInt5
-		selectObject: .sourceSound
-		if modifyF5
-			.intermediateSoundF5 = noprogress Change gender: 60, 600, .target_Phi5 / .phi5, .target_Pitch, 1, .artRate / .target_Rate 
-		else
+			@replaceBand: .target, .intermediateSoundF3, 4*.target_Phi, 6*.target_Phi
+			
+			selectObject: .target, .intermediateSoundF3
+			Remove
+			.target = replaceBand.target
 			selectObject: .target
-			.intermediateSoundF5 = Copy: "CleanCopy"
+			Scale intensity: 70.0
+			Rename: "Pseudonymized"
 		endif
-		Scale intensity: 70 + (.target_Int5 - .int5)
-		Rename: "IntermediatePseudonymizedF5"
-
-		@replaceBand: .target, .intermediateSoundF5, 8*.target_Phi, 10*.target_Phi
 		
-		selectObject:  .target, .intermediateSoundF5
-		Remove
-		.target = replaceBand.target
-		selectObject: .target
-		Scale intensity: 70.0
-		Rename: "Pseudonymized"
+		# Change F4 band
+		if modifyF4 or modifyInt4
+			selectObject: .sourceSound
+			if modifyF4
+				.intermediateSoundF4 = noprogress Change gender: 60, 600, .target_Phi4 / .phi4, .target_Pitch, 1, .artRate / .target_Rate 
+			else
+				selectObject: .target
+				.intermediateSoundF4 = Copy: "CleanCopy"
+			endif
+			Scale intensity:  70 + (.target_Int4 - .int4)
+			Rename: "IntermediatePseudonymizedF4"
+	
+			@replaceBand: .target, .intermediateSoundF4, 6*.target_Phi, 8*.target_Phi
+			
+			selectObject: .target, .intermediateSoundF4
+			Remove
+			.target = replaceBand.target
+			selectObject: .target
+			Scale intensity: 70.0
+			Rename: "Pseudonymized"
+		endif
+		
+		# Change F5 band
+		if modifyF5 or modifyInt5
+			selectObject: .sourceSound
+			if modifyF5
+				.intermediateSoundF5 = noprogress Change gender: 60, 600, .target_Phi5 / .phi5, .target_Pitch, 1, .artRate / .target_Rate 
+			else
+				selectObject: .target
+				.intermediateSoundF5 = Copy: "CleanCopy"
+			endif
+			Scale intensity: 70 + (.target_Int5 - .int5)
+			Rename: "IntermediatePseudonymizedF5"
+	
+			@replaceBand: .target, .intermediateSoundF5, 8*.target_Phi, 10*.target_Phi
+			
+			selectObject:  .target, .intermediateSoundF5
+			Remove
+			.target = replaceBand.target
+			selectObject: .target
+			Scale intensity: 70.0
+			Rename: "Pseudonymized"
+		endif
+		
 	endif
 	
 	# Write values to screen
