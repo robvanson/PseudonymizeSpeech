@@ -53,6 +53,8 @@ if clicked = 1
 	goto START
 endif
 
+# Reset LOG
+writeFileLine: "PseudonymizeSpeechLOG.log", date$()
 
 # Clean up input
 target_Phi$ = replace$(target_Phi$, " (Hz)", "", 0)
@@ -61,12 +63,14 @@ target_Rate$ = replace$(target_Rate$, " (Syll/s)", "", 0)
 output_format$ = replace_regex$(output_format$, "^.*$", "\L&", 0)
 
 debugON = 1
+maximalPitchChange = 1.5
+maximalRateChange = 1.5
 # If this name is <> "", save the table
 saveReferenceTableName$ = "NEW_SpeakerDataTable.tsv"
 # Initialize the values used by the vowel triangle procedure
 call IntitalizeFormantSpace
 
-speakerDataTable = Create Table with column names: "SpeakerData", 1, "Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration"
+speakerDataTable = Create Table with column names: "SpeakerData", 1, "Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration Corpus Gender"
 
 # The Source input contains a control table
 controlTable = -1
@@ -143,6 +147,26 @@ if index_regex(reference$, "\.(tsv|csv)$")
 	else
 		.tmp = Read from file: reference$
 	endif
+	.numRows = Get number of rows
+	selectObject: .tmp
+	.c_corpus = Get column index: "Corpus"
+	if .c_corpus <= 0
+		.c_corpus = 16
+		Insert column: .c_corpus, "Corpus"
+	endif
+	selectObject: .tmp
+	.c_gender = Get column index: "Gender"
+	if .c_gender <= 0
+		.c_gender = 17
+		Insert column: .c_gender, "Gender"
+	else
+		for .r to .numRows
+			.gender$ = Get value: .r, "Gender"
+			.gender$ = replace_regex$(.gender$, ".*", "\L&", 0)
+			Set string value: .r, "Gender", .gender$
+		endfor
+	endif
+	
 	if .tmp > 0
 		selectObject: speakerDataTable
 		Remove
@@ -289,27 +313,48 @@ for .control to .numControlLines
 		if index_regex(.phiTargetList$ [.i] ,"^[^0-9+-]")			
 			@readSpeakerProfile: speakerDataTable, .phiTargetList$ [.i], currentReference$
 			.currentTarget_PhiList[.i] = readSpeakerProfile.phi
-			.currentnameList$ [.i] = .phiTargetList$ [.i];
+			if lastRandom$ <> ""
+				.currentnameList$ [.i] = lastRandom$
+			else
+				.currentnameList$ [.i] = .phiTargetList$ [.i];
+			endif
 		else
 			.currentTarget_PhiList[.i] = extractNumber(.phiTargetList$ [.i], "")
 			.currentnameList$ [.i] = "-";
 		endif
-		if index_regex(.pitchTargetList$ [.i] ,"^[^0-9+-]")
-			@readSpeakerProfile: speakerDataTable, .pitchTargetList$ [.i], currentReference$
+
+		if index_regex(.pitchTargetList$ [.i] ,"^[^0-9+-]") or lastRandom$ <> ""
+			if index_regex(.pitchTargetList$ [.i] ,"^[^0-9+-]")
+				@readSpeakerProfile: speakerDataTable, .pitchTargetList$ [.i], currentReference$
+			else
+				@readSpeakerProfile: speakerDataTable, lastRandom$, currentReference$
+			endif
 			.currentTarget_PitchList[.i] = readSpeakerProfile.pitch
-			.currentnameList$ [.i] = .pitchTargetList$ [.i];
+			if lastRandom$ <> ""
+				.currentnameList$ [.i] = lastRandom$
+			else
+				.currentnameList$ [.i] = .pitchTargetList$ [.i];
+			endif
 		else
 			.currentTarget_PitchList[.i] = extractNumber(.pitchTargetList$ [.i], "")
 		endif
-		
-		if index_regex(.rateTargetList$ [.i] ,"^[^0-9+-]")
-			@readSpeakerProfile: speakerDataTable, .rateTargetList$ [.i], currentReference$
+
+		if index_regex(.rateTargetList$ [.i] ,"^[^0-9+-]") or lastRandom$ <> ""
+			if index_regex(.rateTargetList$ [.i] ,"^[^0-9+-]")
+				@readSpeakerProfile: speakerDataTable, .rateTargetList$ [.i], currentReference$
+			else
+				@readSpeakerProfile: speakerDataTable, lastRandom$, currentReference$
+			endif
 			.currentTarget_RateList[.i] = readSpeakerProfile.rate
-			.currentnameList$ [.i] = .rateTargetList$ [.i];
+			if lastRandom$ <> ""
+				.currentnameList$ [.i] = lastRandom$
+			else
+				.currentnameList$ [.i] = .rateTargetList$ [.i];
+			endif
 		else
 			.currentTarget_RateList[.i] = extractNumber(.rateTargetList$ [.i], "")
 		endif
-		
+
 		if index_regex(.randomize_bandsList$ [.i], "[a-eg-zA-EG-Z]") and index_regex(.phiTargetList$ [.i] ,"^[^0-9+-]")
 			@readSpeakerProfile: speakerDataTable, .randomize_bandsList$ [.i], currentReference$
 			.currentRandomize_bandsList$ [.i] = readSpeakerProfile.randomize_bands$
@@ -330,7 +375,7 @@ for .control to .numControlLines
 	for .f to .numSourceFiles
 		selectObject: .sourceList
 		.fileName$ = Get string: .f
-		appendInfoLine: .sourceDirectory$+"/"+.fileName$
+		appendFileLine: "PseudonymizeSpeechLOG.log", .sourceDirectory$+"/"+.fileName$
 		.tmp = Read from file: .sourceDirectory$+"/"+.fileName$
 		.nameSource$ = selected$()
 		.sourceSound = Convert to mono
@@ -465,7 +510,7 @@ for .control to .numControlLines
 					nowarn Save as WAV file: currentTarget_Directory$+"/"+.targetFilename$
 				endif
 			endif
-			appendInfoLine: .sourceDirectory$+"/"+.targetFilename$
+			appendFileLine: "PseudonymizeSpeechLOG.log", .sourceDirectory$+"/"+.targetFilename$
 
 			selectObject: .target
 			Remove
@@ -522,6 +567,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	.phi4 = Get value: .dataRow, "Phi4"
 	.phi5 = Get value: .dataRow, "Phi5"
 	.referenceArtRate = Get value: .dataRow, "ArtRate"
+
 	for .i from 0 to 5
 		.index = Get column index: "Int'.i'"
 		if .index > 0
@@ -543,11 +589,27 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	if .target_Phi <= 0
 		.target_Phi = .phi
 	endif
+	
 	if .target_Pitch <= 0
 		.target_Pitch = .medianPitch
 	endif
+	if max(.target_Pitch, .medianPitch)/min(.target_Pitch, .medianPitch) > maximalPitchChange
+		if .target_Pitch > .medianPitch
+			.target_Pitch = .medianPitch * maximalPitchChange
+		else
+			.target_Pitch =  .medianPitch / maximalPitchChange
+		endif
+	endif
+	
 	if .target_Rate <= 0
 		.target_Rate = .referenceArtRate
+	endif
+	if max(.target_Rate, .referenceArtRate)/min(.target_Rate, .referenceArtRate) > maximalRateChange
+		if .target_Rate > .referenceArtRate
+			.target_Rate = .referenceArtRate * maximalRateChange
+		else
+			.target_Rate =  .referenceArtRate / maximalRateChange
+		endif
 	endif
 
 	# Randomize formant bands individually
@@ -604,8 +666,14 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	Scale intensity: 70.0
 	Rename: "Pseudonymized"
 	
+	for .i from 0 to 5
+		# Set band frequency targets
+		.target_Phi'.i' = -1;
+		.target_Int'.i' = -1;
+	endfor
+			
 	# Just ignore anything related to individual frequency bands
-	if .ignore_freq_bands
+	if not .ignore_freq_bands
 	
 		# Initialize
 		.meanIntensities# = {64, 67, 58, 50, 47, 45}
@@ -768,8 +836,8 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	endif
 	
 	# Write values to screen
-	printline Original- F0: '.medianPitch:0' Phi- F1-5: '.phi:0' F2: '.phi2:0' F3: '.phi3:0' F4: '.phi4:0' F5: '.phi5:0' Rate: '.artRate:1' 
-	printline Targets- F0: '.target_Pitch:0' Phi- F1-5: '.target_Phi:0' F0: '.target_Phi0:0' F2: '.target_Phi2:0' F3: '.target_Phi3:0' F4: '.target_Phi4:0' F5 '.target_Phi5:0' Rate: '.target_Rate:1'
+	appendFileLine: "PseudonymizeSpeechLOG.log", "Original- F0: '.medianPitch:0' Phi- F1-5: '.phi:0' F2: '.phi2:0' F3: '.phi3:0' F4: '.phi4:0' F5: '.phi5:0' Rate: '.artRate:1'"
+	appendFileLine: "PseudonymizeSpeechLOG.log", "Targets- F0: '.target_Pitch:0' Phi- F1-5: '.target_Phi:0' F0: '.target_Phi0:0' F2: '.target_Phi2:0' F3: '.target_Phi3:0' F4: '.target_Phi4:0' F5 '.target_Phi5:0' Rate: '.target_Rate:1'"
 	selectObject: .target
 endproc
 
@@ -895,7 +963,48 @@ lastRandom$ = ""
 procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 	selectObject: .speakerProfiles
 	.numRows = Get number of rows
-	if .speaker$ = "Random"
+	if .speaker$ = "RandomXgender"
+		.dataRow = Search column: "Reference", .exclude$
+		.gender$ = Get value: .dataRow, "Gender"
+		if .gender$ = "m"
+			.speaker$ = "RandomFemale"
+		elsif .gender$ = "f"
+			.speaker$ = "RandomMale"
+		else
+			.speaker$ = "Random"
+		endif
+	elsif .speaker$ = "RandomSgender"
+		.dataRow = Search column: "Reference", .exclude$
+		.gender$ = Get value: .dataRow, "Gender"
+		if .gender$ = "m"
+			.speaker$ = "RandomMale"
+		elsif .gender$ = "f"
+			.speaker$ = "RandomFemale"
+		else
+			.speaker$ = "Random"
+		endif
+	endif
+	if .speaker$ = "RandomMale" or .speaker$ = "RandomFemale"
+		if lastRandom$ <> ""
+			.speaker$ = lastRandom$
+		elsif .speaker$ = "RandomMale"
+			.gender$ = ""
+			while .speaker$ = "RandomMale" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .gender$ <> "m"
+				.dataRow = randomInteger(1, .numRows)
+				.speaker$ = Get value: .dataRow, "Reference"
+				.gender$ = Get value: .dataRow, "Gender"
+			endwhile
+			lastRandom$ = .speaker$
+		elsif .speaker$ = "RandomFemale"
+			.gender$ = ""
+			while .speaker$ = "RandomMale" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .gender$ <> "f"
+				.dataRow = randomInteger(1, .numRows)
+				.speaker$ = Get value: .dataRow, "Reference"
+				.gender$ = Get value: .dataRow, "Gender"
+			endwhile
+			lastRandom$ = .speaker$
+		endif
+	elsif .speaker$ = "Random"
 		if lastRandom$ <> ""
 			.speaker$ = lastRandom$
 		else
@@ -905,9 +1014,8 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 			endwhile
 			lastRandom$ = .speaker$
 		endif
-	else
-		.dataRow = Search column: "Reference", .speaker$
 	endif
+	.dataRow = Search column: "Reference", .speaker$
 	if .dataRow <= 0
 		exitScript: "Speaker not found: ", .speaker$
 	endif
