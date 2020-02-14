@@ -45,9 +45,11 @@ ManPagesTextFile
 <list_item> "\bu $$Phi3$:  The \fi value calculated from the median F__3_ only."
 <list_item> "\bu $$Phi4$:  The \fi value calculated from the median F__4_ only."
 <list_item> "\bu $$Phi5$:  The \fi value calculated from the median F__5_ only."
-<list_item> "\bu $$ArtRate$: Articulation rate in syllables per second."
+<list_item> "\bu $$ArtRate$: Articulation rate in syllables per second. "
 <list_item> "\bu $$Int0-5$: Intensities measured in bands 0-5. Values \<_ 0 are ignored. "
-<list_item> "\bu $$Duration$: Duration of the reference audio in seconds."
+<list_item> "\bu $$Duration$: Duration of the reference audio in seconds. "
+<list_item> "\bu $$Corpus$: A label to indicate the source corpus of speaker profiles (ignored)."
+<list_item> "\bu $$Gender$: The gender of the speaker, %%f% or %%m%. Used with selecting target profiles. "
 <normal> "This table is automatically created when the main script is run using audio files as a reference. It can be saved after finishing the script as these calculations can take some time. The next time the script is run for the same speaker(s), the resulting table can be used as %%Reference% input."
 
 <entry> "Target Phi, Target Pitch, and Target Rate"
@@ -56,7 +58,9 @@ ManPagesTextFile
 <list_item> "$$Target Pitch: 120, 150, 185$"
 <list_item> "$$Target Rate: 3.8, 4.0, 4.2$"
 <normal> "These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 120, 3.8), then the second of each list (550, 150, 4.0), then the third (585, 185, 4.2), etc. If one list ends before the others, the last value is reused. A value of ""0"" for any of these indicates that the corresponding reference value, \fi, median F0, or articulation rate, will be used, i.e., no change. "
-<normal> "If a %%label% of a speaker is entered in the %%Target Phi% field, its profile will be copied into this and the other fields, including the %%Randomization% fields. Effectively, the system will convert the input speech using the parameters of the target speaker. It is best to empty all the other fields in this case. The label %%Random% will select a random speaker from the speaker profiles, different from the one that is converted."
+<normal> "If a %%label% of a speaker is entered in the %%Target Phi% field, its profile will be copied into this and the other fields, including the %%Randomization% fields. Effectively, the system will convert the input speech using the parameters of the target speaker. It is best to empty all the other fields in this case. "
+
+<normal> "The label %%Random% will select a random speaker from the speaker profiles, different from the one that is converted. The labels %%RandomFemale% and %%RandomMale% work like %%Random%, but they select random female or male speakers. The labels %%RandomSgender% and %%RandomXgender% select a random target speaker profile of the same, respectively, different gender as the source speaker. If no gender information is available, these latter labels work like %%Random%. "
 
 <entry> "Randomize bands and Randomize intensity"
 <normal> "A list of frequency bands, e.g., ""F0, F3, F4, F5"" for which the frequency or intensity is shifted by random amounts. Only a single such list can be entered. It is possible to fix the target values of these bands by entering the target \fi value (neutral F__1_, roughly between 500-600 Hz) or intensity (roughly between 45-70 dB) to hold for that band. For instance, %%Randomize bands% ""F0 = 550, F3=510, F4 = 570, F5=540"" (Hz) or %%Randomize intensity% ""F0 = 65, F3=50, F4 = 43, F5=44"" (dB)."

@@ -32,7 +32,7 @@ When running the script, a form will appear with the following fields:</p>
 <li>
 &nbsp;<i>Remove pauses</i>: A check box to indicate whether pauses in the source audio are removed or not.
 <li>
-&nbsp;<i>Ignore freq bands</i>: A check box to indicate whether frequency and intensity in the F0-F5 band should not be changed. If this box is checked, only the vocal tract length (<i>Target Phi</i>), pitch, and rate are changed.
+&nbsp;<i>Ignore freq bands</i>: A check box to indicate that frequency and intensity in the F0-F5 band should not be changed. If this box is checked, only the vocal tract length (<i>Target Phi</i>), pitch, and rate are changed.
 </ul>
 <p>
 Buttons:</p>
@@ -96,11 +96,15 @@ If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code
 <li>
 &nbsp;<code>Phi5</code>:  The &#966; value calculated from the median F<sub>5</sub> only.
 <li>
-&nbsp;<code>ArtRate</code>: Articulation rate in syllables per second.
+&nbsp;<code>ArtRate</code>: Articulation rate in syllables per second. 
 <li>
 &nbsp;<code>Int0-5</code>: Intensities measured in bands 0-5. Values &#8804; 0 are ignored. 
 <li>
-&nbsp;<code>Duration</code>: Duration of the reference audio in seconds.
+&nbsp;<code>Duration</code>: Duration of the reference audio in seconds. 
+<li>
+&nbsp;<code>Corpus</code>: A label to indicate the source corpus of speaker profiles (ignored).
+<li>
+&nbsp;<code>Gender</code>: The gender of the speaker, <i>f</i> or <i>m</i>. Used with selecting target profiles. 
 </ul>
 <p>
 This table is automatically created when the main script is run using audio files as a reference. It can be saved after finishing the script as these calculations can take some time. The next time the script is run for the same speaker(s), the resulting table can be used as <i>Reference</i> input.</p>
@@ -119,7 +123,9 @@ These fields accept a list of comma separated values, e.g.,</p>
 <p>
 These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 120, 3.8), then the second of each list (550, 150, 4.0), then the third (585, 185, 4.2), etc. If one list ends before the others, the last value is reused. A value of "0" for any of these indicates that the corresponding reference value, &#966;, median F0, or articulation rate, will be used, i.e., no change. </p>
 <p>
-If a <i>label</i> of a speaker is entered in the <i>Target Phi</i> field, its profile will be copied into this and the other fields, including the <i>Randomization</i> fields. Effectively, the system will convert the input speech using the parameters of the target speaker. It is best to empty all the other fields in this case. The label <i>Random</i> will select a random speaker from the speaker profiles, different from the one that is converted.</p>
+If a <i>label</i> of a speaker is entered in the <i>Target Phi</i> field, its profile will be copied into this and the other fields, including the <i>Randomization</i> fields. Effectively, the system will convert the input speech using the parameters of the target speaker. It is best to empty all the other fields in this case. </p>
+<p>
+The label <i>Random</i> will select a random speaker from the speaker profiles, different from the one that is converted. The labels <i>RandomFemale</i> and <i>RandomMale</i> work like <i>Random</i>, but they select random female or male speakers. The labels <i>RandomSgender</i> and <i>RandomXgender</i> select a random target speaker profile of the same, respectively, different gender as the source speaker. If no gender information is available, these latter labels work like <i>Random</i>. </p>
 <h3>
 Randomize bands and Randomize intensity</h3>
 <p>
