@@ -20,7 +20,34 @@
 # 
 #     You should have received a copy of the GNU Affero General Public License
 #     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-# 
+#
+interactiveUse = 1
+#
+# Uncomment for non-interactive use
+#
+#form Select recordings
+#	sentence Source Sgender_ControlPseudonymization.tsv
+#	sentence Reference Combined_SpeakerProfiles.tsv
+#	sentence Target_Phi 500 (Hz)
+#	sentence Target_Pitch 120 (Hz)
+#	sentence Target_Rate 3.8 (Syll/s)
+#	sentence Target_Directory pseudonymized
+#	sentence Randomize_bands F0 F3 F4 F5
+#	sentence Randomize_intensity F0 F3 F4 F5
+#	optionmenu Output_format: 1
+#		option WAV
+#		option FLAC
+#	boolean Remove_pauses 0
+#	boolean Ignore_freq_bands 0
+#endform
+#
+#interactiveUse = 0
+#
+# End of uncomment for non-interactive use
+
+# if for interactive use
+if interactiveUse
+#
 label START
 beginPause: "Select recordings"
 	sentence: "Source", "ControlPseudonymization.tsv"
@@ -51,6 +78,9 @@ if clicked = 1
 		helpClicked = endPause: "Continue", 1
 	endif
 	goto START
+endif
+
+# Endif for interactive use
 endif
 
 # Reset LOG
