@@ -15,6 +15,7 @@ ManPagesTextFile
 <list_item> "\bu %%Output format%: A choice of output formats, WAV or FLAC."
 <list_item> "\bu %%Remove pauses%: A check box to indicate whether pauses in the source audio are removed or not."
 <list_item> "\bu %%Ignore freq bands%: A check box to indicate that frequency and intensity in the F0-F5 band should not be changed. If this box is checked, only the vocal tract length (%%Target Phi%), pitch, and rate are changed."
+<list_item> "\bu %%Switch F4 F5%: A check box to indicate that frequency bands corresponding to F4 and F5 should be exchanged. This is a rather coarse operation to check the use of hte higher frequencies."
 
 <normal> "Buttons:" 
 <list_item> "\bu %%Stop%: Abort the script."

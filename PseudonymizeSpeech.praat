@@ -39,6 +39,7 @@ interactiveUse = 1
 #		option FLAC
 #	boolean Remove_pauses 0
 #	boolean Ignore_freq_bands 0
+#	boolean: Switch_F4_F5, 0
 #endform
 #
 #interactiveUse = 0
@@ -63,6 +64,7 @@ beginPause: "Select recordings"
 		option: "FLAC"
 	boolean: "Remove_pauses", 0
 	boolean: "Ignore_freq_bands", 0
+	boolean: "Switch F4 F5", 0
 	
 clicked = endPause: "Help", "Continue", 2
 
@@ -261,7 +263,7 @@ for .control to .numControlLines
 		endif
 	endif
 	current_Randomize_intensity$ = randomize_intensity$
-	.index = Get column index: "Randomize_bands"
+	.index = Get column index: "Randomize_intensity"
 	if .index > 0
 		.tmp$ = Get value: .control, "Randomize_intensity"
 		if .tmp$ <> "" and .tmp$ <> "-"
@@ -292,8 +294,8 @@ for .control to .numControlLines
 	.phiTargetList$ [1] = currentReference$
 	.pitchTargetList$ [1] = currentReference$
 	.rateTargetList$ [1] = currentReference$
-	.randomize_bandsList$ [1] = randomize_bands$
-	.randomize_intensityList$ [1] = randomize_intensity$
+	.randomize_bandsList$ [1] = current_Randomize_bands$
+	.randomize_intensityList$ [1] = current_Randomize_intensity$
 	
 	while .phiTargets$ <> "" or .pitchTargets$ <> "" or .rateTargets$ <> ""
 		.prev = max(.numTargets, 1)
@@ -863,11 +865,21 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 			Rename: "Pseudonymized"
 		endif
 		
+		# Switch F4 and F5
+		if switch_F4_F5
+			@switchBands: .target, .target_Pitch, 6*.target_Phi, 8*.target_Phi, 8*.target_Phi, 10*.target_Phi
+			selectObject: .target
+			Remove
+			.target = switchBands.target
+			selectObject: .target
+			Rename: "Pseudonymized"
+		endif
+		
 	endif
 	
 	# Write values to screen
-	appendFileLine: "PseudonymizeSpeechLOG.log", "Original- F0: '.medianPitch:0' Phi- F1-5: '.phi:0' F2: '.phi2:0' F3: '.phi3:0' F4: '.phi4:0' F5: '.phi5:0' Rate: '.artRate:1'"
-	appendFileLine: "PseudonymizeSpeechLOG.log", "Targets- F0: '.target_Pitch:0' Phi- F1-5: '.target_Phi:0' F0: '.target_Phi0:0' F2: '.target_Phi2:0' F3: '.target_Phi3:0' F4: '.target_Phi4:0' F5 '.target_Phi5:0' Rate: '.target_Rate:1'"
+	appendFileLine: "PseudonymizeSpeechLOG.log", "Original- F0: '.medianPitch:0' Phi- F1-4: '.phi:0' F2: '.phi2:0' F3: '.phi3:0' F4: '.phi4:0' F5: '.phi5:0' Rate: '.artRate:1'"
+	appendFileLine: "PseudonymizeSpeechLOG.log", "Targets- F0: '.target_Pitch:0' Phi- F1-4: '.target_Phi:0' F0: '.target_Phi0:0' F1: '.target_Phi1:0' F2: '.target_Phi2:0' F3: '.target_Phi3:0' F4: '.target_Phi4:0' F5 '.target_Phi5:0' Rate: '.target_Rate:1'"
 	selectObject: .target
 endproc
 
@@ -1658,6 +1670,12 @@ procedure replaceBand .source .replacement .low .high
 		.filteredReplacement = Filter (pass Hann band): .low, .high, .low / 10
 	endif
 
+	# Correct bug in Praat that results in rounding differences in sampling period
+	selectObject: .filteredSource
+	.samplingRate = Get sampling frequency
+	selectObject: .filteredReplacement
+	Override sampling frequency: .samplingRate
+	
 	# Combine bands into stereo
 	selectObject: .filteredSource, .filteredReplacement
 	.tmp = Combine to stereo
@@ -1665,6 +1683,32 @@ procedure replaceBand .source .replacement .low .high
 
 	selectObject: .filteredSource, .filteredReplacement, .tmp
 	Remove
+endproc
+
+
+###########################################################################
+# 
+# Replace a spectral band [.low, .high] in the source by the replacement
+#
+
+procedure switchBands .source .target_Pitch .low1 .high1 .low2 .high2
+	# Down transform low2 to low1
+	selectObject: .source
+	.tmp2 = noprogress Change gender: 60, 600, .low1 / .low2, .target_Pitch, 1, 1	
+	# Up transform low1 to low2
+	selectObject: .source
+	.tmp1 = noprogress Change gender: 60, 600, .low2 / .low1, .target_Pitch, 1, 1	
+	
+	@replaceBand: .source, .tmp2, .low1, .high1
+	.resultTmp = replaceBand.target
+	@replaceBand: .resultTmp, .tmp1, .low2, .high2
+	.target = replaceBand.target
+	
+	selectObject: .tmp1, .tmp2, .resultTmp
+	Remove
+
+	selectObject: .target
+	Scale intensity: 70
 endproc
 
 
