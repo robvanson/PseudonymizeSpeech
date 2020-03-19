@@ -26,7 +26,7 @@ interactiveUse = 1
 # Uncomment for non-interactive use
 #
 #form Select recordings
-#	sentence Source Sgender_ControlPseudonymization.tsv
+#	sentence Source ControlPseudonymization.tsv
 #	sentence Reference Combined_SpeakerProfiles.tsv
 #	sentence Target_Phi 500 (Hz)
 #	sentence Target_Pitch 120 (Hz)
