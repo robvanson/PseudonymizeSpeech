@@ -26,7 +26,7 @@ interactiveUse = 1
 # Uncomment for non-interactive use
 #
 #form Select recordings
-#	sentence Source ControlPseudonymization.tsv
+#	sentence Source Sgender_ControlPseudonymization.tsv
 #	sentence Reference Combined_SpeakerProfiles.tsv
 #	sentence Target_Phi 500 (Hz)
 #	sentence Target_Pitch 120 (Hz)
@@ -39,7 +39,7 @@ interactiveUse = 1
 #		option FLAC
 #	boolean Remove_pauses 0
 #	boolean Ignore_freq_bands 0
-#	boolean: Switch_F4_F5, 0
+#	boolean Switch_F4_F5 0
 #endform
 #
 #interactiveUse = 0
@@ -1005,6 +1005,11 @@ lastRandom$ = ""
 procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 	selectObject: .speakerProfiles
 	.numRows = Get number of rows
+	.randomCorpus$ = ""
+	if index(.speaker$, "=")
+		.randomCorpus$ = extractWord$(.speaker$, "=")
+		.speaker$ = replace_regex$(.speaker$, "\s*=.*$",  "", 0)
+	endif
 	if .speaker$ = "RandomXgender"
 		.dataRow = Search column: "Reference", .exclude$
 		.gender$ = Get value: .dataRow, "Gender"
@@ -1031,18 +1036,26 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 			.speaker$ = lastRandom$
 		elsif .speaker$ = "RandomMale"
 			.gender$ = ""
-			while .speaker$ = "RandomMale" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .gender$ <> "m"
+			.corpus$ = ""
+			while .speaker$ = "RandomMale" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .gender$ <> "m" or .corpus$ <> .randomCorpus$
 				.dataRow = randomInteger(1, .numRows)
 				.speaker$ = Get value: .dataRow, "Reference"
 				.gender$ = Get value: .dataRow, "Gender"
+				if .randomCorpus$ <> ""
+					.corpus$ = Get value: .dataRow, "Corpus"
+				endif
 			endwhile
 			lastRandom$ = .speaker$
 		elsif .speaker$ = "RandomFemale"
 			.gender$ = ""
-			while .speaker$ = "RandomMale" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .gender$ <> "f"
+			.corpus$ = ""
+			while .speaker$ = "RandomMale" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .gender$ <> "f" or .corpus$ <> .randomCorpus$
 				.dataRow = randomInteger(1, .numRows)
 				.speaker$ = Get value: .dataRow, "Reference"
 				.gender$ = Get value: .dataRow, "Gender"
+				if .randomCorpus$ <> ""
+					.corpus$ = Get value: .dataRow, "Corpus"
+				endif
 			endwhile
 			lastRandom$ = .speaker$
 		endif
@@ -1050,9 +1063,13 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 		if lastRandom$ <> ""
 			.speaker$ = lastRandom$
 		else
-			while .speaker$ = "Random" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]")
+			.corpus$ = ""
+			while .speaker$ = "Random" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .corpus$ <> .randomCorpus$
 				.dataRow = randomInteger(1, .numRows)
 				.speaker$ = Get value: .dataRow, "Reference"
+				if .randomCorpus <> ""
+					.corpus = Get value: .dataRow, "Corpus"
+				endif
 			endwhile
 			lastRandom$ = .speaker$
 		endif
