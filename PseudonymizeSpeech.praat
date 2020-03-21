@@ -600,7 +600,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	.phi5 = Get value: .dataRow, "Phi5"
 	.referenceArtRate = Get value: .dataRow, "ArtRate"
 
-	for .i from 0 to 5
+	for .i from 0 to 9
 		.index = Get column index: "Int'.i'"
 		if .index > 0
 			.int'.i' = Get value: .dataRow, "Int'.i'"
@@ -646,13 +646,17 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 
 	# Randomize formant bands individually
 	# Parse Frequency band randomization
-	for .i from 0 to 5
+	for .i from 0 to 9
 		modifyF'.i' = 0
 		if index(.randomize_bands$, "F'.i'")
 			modifyF'.i' = 1
-			if index_regex(.randomize_bands$, "F'.i'\s*=\s*[-+]?\d")
+			if index_regex(.randomize_bands$, "F'.i'\s*=\s*([-+]?\d|NOISE)")
 				.band$ = replace_regex$(.randomize_bands$, "^.*(F'.i'\s*=\s*).*$", "\1", 0)
-				modifyF'.i' = extractNumber(.randomize_bands$, .band$)
+				if index_regex(.randomize_bands$, "F'.i'\s*=\s*NOISE")
+					modifyF'.i' = 999999
+				else
+					modifyF'.i' = extractNumber(.randomize_bands$, .band$)
+				endif
 				if modifyF'.i' <= 0
 					if .i <= 1
 						modifyF'.i' = .phi
@@ -669,7 +673,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	
 	# Randomize intensity bands individually
 	# Parse Intensity band randomization
-	for .i from 0 to 5
+	for .i from 0 to 9
 		modifyInt'.i' = 0
 		if index(.randomize_intensity$, "F'.i'")
 			modifyInt'.i' = 1000
@@ -698,7 +702,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	Scale intensity: 70.0
 	Rename: "Pseudonymized"
 	
-	for .i from 0 to 5
+	for .i from 0 to 9
 		# Set band frequency targets
 		.target_Phi'.i' = -1;
 		.target_Int'.i' = -1;
@@ -711,10 +715,14 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		.meanIntensities# = {64, 67, 58, 50, 47, 45}
 		.rangeIntensities# = {4.5, 2.5, 4.5, 8, 10, 9}
 	
-		for .i from 0 to 5
+		for .i from 0 to 9
 			# Set band frequency targets
 			.target_Phi'.i' = -1;
-			if modifyF'.i' > 1
+			# Catch noise bands
+			if modifyF'.i' >= 999999
+				.target_Phi'.i' = modifyF'.i'
+				modifyF'.i' = 0
+			elsif modifyF'.i' > 1
 				.target_Phi'.i' = modifyF'.i'
 			elsif modifyF'.i'
 				.range = 75
@@ -874,7 +882,22 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 			selectObject: .target
 			Rename: "Pseudonymized"
 		endif
-		
+
+		for .i from 0 to 9
+			# Set Noise bands
+			if .target_Phi'.i' >= 999999
+				if .i < 1
+					@noiseBand: .target, 0, .target_Phi / 2
+				elsif .i == 1
+					@noiseBand: .target, .target_Phi / 2, 2 * .target_Phi
+				else
+					@noiseBand: .target, 2 * (.i - 1) *.target_Phi, 2 * .i *.target_Phi
+				endif
+				selectObject:  .target
+				Remove
+				.target = noiseBand.target
+			endif
+		endfor
 	endif
 	
 	# Write values to screen
@@ -1728,6 +1751,89 @@ procedure switchBands .source .target_Pitch .low1 .high1 .low2 .high2
 	Scale intensity: 70
 endproc
 
+###########################################################################
+# 
+# Replace a spectral band [.low, .high] in the source by modulated noise
+#
+
+procedure noiseBand .source .low .high
+
+	# Extract band from .source
+	selectObject: .source
+	if .low <= 0
+		# Low pass
+		.filteredReplacement = Filter (pass Hann band): 0, .high, .high / 10
+	elsif .high <= 0 or .high >= 20000
+		# High pass
+		.filteredReplacement = Filter (pass Hann band): .low, 20000, .low / 10
+	else
+		# Pass band
+		.filteredReplacement = Filter (pass Hann band): .low, .high, .low / 10
+	endif
+	
+	# Remove .low - .high band from source
+	selectObject: .source
+	if .low <= 0
+		# High pass
+		.filteredSource = Filter (pass Hann band): .high, 20000, .high / 10
+	elsif .high <= 0 or .high >= 20000
+		# Low pass
+		.filteredSource = Filter (pass Hann band): 0, .low, .low / 10
+	else
+		# Stop band
+		.filteredSource = Filter (stop Hann band): .low, .high, .low / 10
+	endif
+	
+	# Generate modulation
+	selectObject: .filteredReplacement
+	.intensityBand = Get intensity (dB)
+	.durationSound = Get total duration
+	.samplingFrequency = Get sampling frequency
+	.intensity = To Intensity: 80, 0, "yes"
+	.intensityTier = To IntensityTier (peaks)
+	
+	# Create pink noise following D. Weenink, "Speech Signal Processing with Praat"
+	# http://www.fon.hum.uva.nl/david/LOT/sspbook.pdf
+	.whiteNoise = Create Sound from formula: "Noise", 1, 0.0, .durationSound, .samplingFrequency, "randomGauss(0,1)"
+	.spectrumWN = To Spectrum: "no"
+	Formula: "if x>100  then  self*sqrt(100/x) else 0 fi"
+	.pinkNoise = To Sound
+	
+	# Extract band
+	if .low <= 0
+		# Low pass
+		.bandNoise = Filter (pass Hann band): 0, .high, .high / 10
+	elsif .high <= 0 or .high >= 20000
+		# High pass
+		.bandNoise = Filter (pass Hann band): .low, 20000, .low / 10
+	else
+		# Pass band
+		.bandNoise = Filter (pass Hann band): .low, .high, .low / 10
+	endif
+	plusObject: .intensityTier
+	.modulatedNoise = Multiply: "yes"
+	if .intensityBand > 0
+		Scale intensity: .intensityBand
+	else
+		Multiply: 0
+	endif
+
+	# Correct bug in Praat that results in rounding differences in sampling period
+	selectObject: .filteredSource
+	.samplingRate = Get sampling frequency
+	selectObject: .modulatedNoise
+	Override sampling frequency: .samplingRate
+	
+	# Combine bands into stereo
+	selectObject: .filteredSource, .modulatedNoise
+	.tmp = Combine to stereo
+	.target = Convert to mono
+	Scale intensity: 70
+	selectObject: .filteredSource, .filteredReplacement, .tmp, .bandNoise, .intensityTier, .intensity, .modulatedNoise, .whiteNoise, .pinkNoise, .spectrumWN
+	Remove
+endproc
+
+
 
 ###########################################################################
 #                                                                         #
@@ -2203,4 +2309,3 @@ averagePhi_VTL ["Robust", "A"] = 540.51
 endproc
 
 ###############################################################
-

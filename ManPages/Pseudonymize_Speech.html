@@ -135,6 +135,8 @@ A list of frequency bands, e.g., "F0, F3, F4, F5" for which the frequency or int
 <p>
 Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 550, 530, 530, 510, 560</i> &#177;50 Hz and corresponding intensities: <i>64&#177;4.5, 67&#177;2.5, 58&#177;4.5, 50&#177;8, 47&#177;10, 45&#177;9</i> dB (&#177;2SD). For randomization of frequency bands, &#966;&#177;40 and &#966;&#177;75 Hz are used for F0-1 and F2-5, respectively. For randomization of intensities, the above example values are used, including the 2SD values as ranges. </p>
 <p>
+A special option is to replace frequency bands by modulated <i>pink noise</i>. This option might be useful when it is desired to remove all information from certain spectral regions, e.g., for studying <i>Automatic Speaker Identification</i>. For example, <i>Randomize bands</i> "F4 = NOISE" will replace the band around F4 with modulated pink noise scaled to the original intensity. This will also work for F6-F9, e.g., "F7=NOISE". Note, &#966; frequency values or randomization are <i>not</i> supported for F6-F9. </p>
+<p>
 The <i>Ignore freq bands</i> checkbox is supplied to suppress all individual frequency band and intensity changes. This option is most usefull in testing the effectivity of frequency band and intesity changes.</p>
 <h3>
 <i>References</i></h3>
