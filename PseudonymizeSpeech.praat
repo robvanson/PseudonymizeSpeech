@@ -670,7 +670,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 					modifyF'.i' = extractNumber(.randomize_bands$, .band$)
 				endif
 				if modifyF'.i' <= 0
-					if .i <= 1
+					if .i < 1
 						modifyF'.i' = .phi
 					else
 						modifyF'.i' = .phi'.i'
@@ -1125,7 +1125,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 	.phi5 = Get value: .dataRow, "Phi5"
 	.rate = Get value: .dataRow, "ArtRate"
 
-	.randomize_bands$ = "F0='.phi', F1='.phi', F1='.phi1', F2='.phi2', F3='.phi3', F4='.phi4', F5='.phi5'"
+	.randomize_bands$ = "F0='.phi', F1='.phi1', F2='.phi2', F3='.phi3', F4='.phi4', F5='.phi5'"
 
 	for .i from 0 to 5
 		.int'.i' = Get value: .dataRow, "Int'.i'"
