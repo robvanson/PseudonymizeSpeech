@@ -34,7 +34,7 @@ When running the script, a form will appear with the following fields:</p>
 <li>
 &nbsp;<i>Ignore freq bands</i>: A check box to indicate that frequency and intensity in the F0-F5 band should not be changed. If this box is checked, only the vocal tract length (<i>Target Phi</i>), pitch, and rate are changed.
 <li>
-&nbsp;<i>Switch F4 F5</i>: A check box to indicate that frequency bands corresponding to F4 and F5 should be exchanged. This is a rather coarse operation to check the use of hte higher frequencies.
+&nbsp;<i>Switch F4 F5</i>: A check box to indicate that frequency bands corresponding to F4 and F5 should be exchanged. This is a rather coarse operation to check the use of the higher frequencies.
 </ul>
 <p>
 Buttons:</p>
@@ -81,7 +81,7 @@ Reference</h3>
 <p>
 If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code>.csv</code> or <code>.tsv</code> table containing <i>speaker profiles</i>. Such a table should have the following column labels: </p>
 <p>
-<code>Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration</code></p>
+<code>Reference MedianPitch Phi Phi1 Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration</code></p>
 <ul>
 <li>
 &nbsp;<code>Reference</code>: A label indicating the source audio or the speaker.
@@ -89,6 +89,8 @@ If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code
 &nbsp;<code>MedianPitch</code>: Median F0 value of the speaker (audio).
 <li>
 &nbsp;<code>Phi</code>: The &#966; value calculated according to [1].
+<li>
+&nbsp;<code>Phi1</code>: The &#966; value calculated from the median F<sub>1</sub> only.
 <li>
 &nbsp;<code>Phi2</code>: The &#966; value calculated from the median F<sub>2</sub> only.
 <li>
@@ -137,7 +139,7 @@ Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 
 <p>
 A special option is to replace frequency bands by modulated <i>pink noise</i>. This option might be useful when it is desired to remove all information from certain spectral regions, e.g., for studying <i>Automatic Speaker Identification</i>. For example, <i>Randomize bands</i> "F4 = NOISE" will replace the band around F4 with modulated pink noise scaled to the original intensity. This will also work for F6-F9, e.g., "F7=NOISE". Note, &#966; frequency values or randomization are <i>not</i> supported for F6-F9. </p>
 <p>
-The <i>Ignore freq bands</i> checkbox is supplied to suppress all individual frequency band and intensity changes. This option is most usefull in testing the effectivity of frequency band and intesity changes.</p>
+The <i>Ignore freq bands</i> checkbox is supplied to suppress all individual frequency band and intensity changes. This option is most usefull in testing the effectivity of frequency band and intensity changes.</p>
 <h3>
 <i>References</i></h3>
 <p>

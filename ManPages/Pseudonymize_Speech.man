@@ -15,7 +15,7 @@ ManPagesTextFile
 <list_item> "\bu %%Output format%: A choice of output formats, WAV or FLAC."
 <list_item> "\bu %%Remove pauses%: A check box to indicate whether pauses in the source audio are removed or not."
 <list_item> "\bu %%Ignore freq bands%: A check box to indicate that frequency and intensity in the F0-F5 band should not be changed. If this box is checked, only the vocal tract length (%%Target Phi%), pitch, and rate are changed."
-<list_item> "\bu %%Switch F4 F5%: A check box to indicate that frequency bands corresponding to F4 and F5 should be exchanged. This is a rather coarse operation to check the use of hte higher frequencies."
+<list_item> "\bu %%Switch F4 F5%: A check box to indicate that frequency bands corresponding to F4 and F5 should be exchanged. This is a rather coarse operation to check the use of the higher frequencies."
 
 <normal> "Buttons:" 
 <list_item> "\bu %%Stop%: Abort the script."
@@ -38,10 +38,11 @@ ManPagesTextFile
 
 <entry> "Reference"
 <normal> "If the %%Reference% is not a path to soundfiles, it can be a path to a $$.csv$ or $$.tsv$ table containing %%speaker profiles%. Such a table should have the following column labels: "
-<normal> "$$Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration$"
+<normal> "$$Reference MedianPitch Phi Phi1 Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration$"
 <list_item> "\bu $$Reference$: A label indicating the source audio or the speaker."
 <list_item> "\bu $$MedianPitch$: Median F0 value of the speaker (audio)."
 <list_item> "\bu $$Phi$: The \fi value calculated according to [1]."
+<list_item> "\bu $$Phi1$: The \fi value calculated from the median F__1_ only."
 <list_item> "\bu $$Phi2$: The \fi value calculated from the median F__2_ only."
 <list_item> "\bu $$Phi3$:  The \fi value calculated from the median F__3_ only."
 <list_item> "\bu $$Phi4$:  The \fi value calculated from the median F__4_ only."
@@ -67,7 +68,7 @@ ManPagesTextFile
 <normal> "A list of frequency bands, e.g., ""F0, F3, F4, F5"" for which the frequency or intensity is shifted by random amounts. Only a single such list can be entered. It is possible to fix the target values of these bands by entering the target \fi value (neutral F__1_, roughly between 500-600 Hz) or intensity (roughly between 45-70 dB) to hold for that band. For instance, %%Randomize bands% ""F0 = 550, F3=510, F4 = 570, F5=540"" (Hz) or %%Randomize intensity% ""F0 = 65, F3=50, F4 = 43, F5=44"" (dB)."
 <normal> "Example frequency values for F0-F5 for a speaker could be, frequencies: %%550, 550, 530, 530, 510, 560% \+-50 Hz and corresponding intensities: %%64\+-4.5, 67\+-2.5, 58\+-4.5, 50\+-8, 47\+-10, 45\+-9% dB (\+-2SD). For randomization of frequency bands, \fi\+-40 and \fi\+-75 Hz are used for F0-1 and F2-5, respectively. For randomization of intensities, the above example values are used, including the 2SD values as ranges. "
 <normal> "A special option is to replace frequency bands by modulated %%pink noise%. This option might be useful when it is desired to remove all information from certain spectral regions, e.g., for studying %%Automatic Speaker Identification%. For example, %%Randomize bands% ""F4 = NOISE"" will replace the band around F4 with modulated pink noise scaled to the original intensity. This will also work for F6-F9, e.g., ""F7=NOISE"". Note, \fi frequency values or randomization are %%not% supported for F6-F9. "
-<normal> "The %%Ignore freq bands% checkbox is supplied to suppress all individual frequency band and intensity changes. This option is most usefull in testing the effectivity of frequency band and intesity changes."
+<normal> "The %%Ignore freq bands% checkbox is supplied to suppress all individual frequency band and intensity changes. This option is most usefull in testing the effectivity of frequency band and intensity changes."
 
 <entry> "%%References%"
 <normal> "[1] Lammert AC, Narayanan SS. %%On Short-Time Estimation of Vocal Tract Length from Formant Frequencies%. PLOS ONE. 2015 Jul 15;10(7):e0132193. "
