@@ -26,8 +26,8 @@ interactiveUse = 1
 # Uncomment for non-interactive use
 #
 #form Select recordings
-#	sentence Source Sgender_ControlPseudonymization.tsv
-#	sentence Reference Combined_SpeakerProfiles.tsv
+#	sentence Source ControlPseudonymization.tsv
+#	sentence Reference SpeakerProfiles.tsv
 #	sentence Target_Phi 500 (Hz)
 #	sentence Target_Pitch 120 (Hz)
 #	sentence Target_Rate 3.8 (Syll/s)
@@ -102,7 +102,7 @@ saveReferenceTableName$ = "NEW_SpeakerDataTable.tsv"
 # Initialize the values used by the vowel triangle procedure
 call IntitalizeFormantSpace
 
-speakerDataTable = Create Table with column names: "SpeakerData", 1, "Reference MedianPitch Phi Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration Corpus Gender"
+speakerDataTable = Create Table with column names: "SpeakerData", 1, "Reference MedianPitch Phi Phi1 Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration Corpus Gender"
 
 # The Source input contains a control table
 controlTable = -1
@@ -181,15 +181,24 @@ if index_regex(reference$, "\.(tsv|csv)$")
 	endif
 	.numRows = Get number of rows
 	selectObject: .tmp
+	.c_Phi1 = Get column index: "Phi1"
+	if .c_Phi1 <= 0
+		.c_Phi1 = 4
+		Insert column: .c_Phi1, "Phi1"
+		for .r to .numRows
+			.phi1 = Get value: .r, "Phi"
+			Set string value: .r, "Phi1", .phi1
+		endfor
+	endif
 	.c_corpus = Get column index: "Corpus"
 	if .c_corpus <= 0
-		.c_corpus = 16
+		.c_corpus = 17
 		Insert column: .c_corpus, "Corpus"
 	endif
 	selectObject: .tmp
 	.c_gender = Get column index: "Gender"
 	if .c_gender <= 0
-		.c_gender = 17
+		.c_gender = 18
 		Insert column: .c_gender, "Gender"
 	else
 		for .r to .numRows
@@ -471,6 +480,7 @@ for .control to .numControlLines
 			call vocalTractAndSpeakerMeasures .refRecording
 			.medianPitch = vocalTractAndSpeakerMeasures.medianPitch
 			.phi = vocalTractAndSpeakerMeasures.phi
+			.phi1 = vocalTractAndSpeakerMeasures.phi1
 			.phi2 = vocalTractAndSpeakerMeasures.phi2
 			.phi3 = vocalTractAndSpeakerMeasures.phi3
 			.phi4 = vocalTractAndSpeakerMeasures.phi4
@@ -493,6 +503,7 @@ for .control to .numControlLines
 			Set string value: .dataRow, "Reference", currentRefName$
 			Set numeric value: .dataRow, "MedianPitch", .medianPitch
 			Set numeric value: .dataRow, "Phi", .phi
+			Set numeric value: .dataRow, "Phi1", .phi1
 			Set numeric value: .dataRow, "Phi2", .phi2
 			Set numeric value: .dataRow, "Phi3", .phi3
 			Set numeric value: .dataRow, "Phi4", .phi4
@@ -594,6 +605,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	selectObject: .refData
 	.medianPitch  = Get value: .dataRow, "MedianPitch"
 	.phi  = Get value: .dataRow, "Phi"
+	.phi1 = Get value: .dataRow, "Phi1"
 	.phi2 = Get value: .dataRow, "Phi2"
 	.phi3 = Get value: .dataRow, "Phi3"
 	.phi4 = Get value: .dataRow, "Phi4"
@@ -767,7 +779,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyF1 or modifyInt1
 			selectObject: .sourceSound
 			if modifyF1
-				.intermediateSoundF1 = noprogress Change gender: 60, 600, .target_Phi1 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
+				.intermediateSoundF1 = noprogress Change gender: 60, 600, .target_Phi1 / .phi1, .target_Pitch, 1, .artRate / .target_Rate 
 			else
 				selectObject: .target
 				.intermediateSoundF1 = Copy: "CleanCopy"
@@ -901,7 +913,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	endif
 	
 	# Write values to screen
-	appendFileLine: "PseudonymizeSpeechLOG.log", "Original- F0: '.medianPitch:0' Phi- F1-4: '.phi:0' F2: '.phi2:0' F3: '.phi3:0' F4: '.phi4:0' F5: '.phi5:0' Rate: '.artRate:1'"
+	appendFileLine: "PseudonymizeSpeechLOG.log", "Original- F0: '.medianPitch:0' Phi- F1-4: '.phi:0' F1: '.phi1:0' F2: '.phi2:0' F3: '.phi3:0' F4: '.phi4:0' F5: '.phi5:0' Rate: '.artRate:1'"
 	appendFileLine: "PseudonymizeSpeechLOG.log", "Targets- F0: '.target_Pitch:0' Phi- F1-4: '.target_Phi:0' F0: '.target_Phi0:0' F1: '.target_Phi1:0' F2: '.target_Phi2:0' F3: '.target_Phi3:0' F4: '.target_Phi4:0' F5 '.target_Phi5:0' Rate: '.target_Rate:1'"
 	selectObject: .target
 endproc
@@ -963,6 +975,7 @@ procedure vocalTractAndSpeakerMeasures .sound
 	
 	call extract_speaker_characteristics: .sound .formants
 	.medianPitch = extract_speaker_characteristics.medianF0
+	.medianF1 = extract_speaker_characteristics.medianF1
 	.medianF2 = extract_speaker_characteristics.medianF2
 	.medianF3 = extract_speaker_characteristics.medianF3
 	.medianF4 = extract_speaker_characteristics.medianF4
@@ -982,6 +995,7 @@ procedure vocalTractAndSpeakerMeasures .sound
 	.vocalTractLength = estimate_Vocal_Tract_Length.vtl
 	.phi = estimate_Vocal_Tract_Length.phi
 	
+	.phi1 = .medianF1
 	.phi2 = .medianF2/3
 	.phi3 = .medianF3/5
 	.phi4 = .medianF4/7
@@ -1104,13 +1118,14 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 	
 	.pitch = Get value: .dataRow, "MedianPitch"
 	.phi = Get value: .dataRow, "Phi"
+	.phi1 = Get value: .dataRow, "Phi1"
 	.phi2 = Get value: .dataRow, "Phi2"
 	.phi3 = Get value: .dataRow, "Phi3"
 	.phi4 = Get value: .dataRow, "Phi4"
 	.phi5 = Get value: .dataRow, "Phi5"
 	.rate = Get value: .dataRow, "ArtRate"
 
-	.randomize_bands$ = "F0='.phi', F1='.phi', F2='.phi2', F3='.phi3', F4='.phi4', F5='.phi5'"
+	.randomize_bands$ = "F0='.phi', F1='.phi', F1='.phi1', F2='.phi2', F3='.phi3', F4='.phi4', F5='.phi5'"
 
 	for .i from 0 to 5
 		.int'.i' = Get value: .dataRow, "Int'.i'"
