@@ -26,8 +26,8 @@ interactiveUse = 1
 # Uncomment for non-interactive use
 #
 #form Select recordings
-#	sentence Source ControlPseudonymization.tsv
-#	sentence Reference SpeakerProfiles.tsv
+#	sentence Source ControlPseudonymization.csv
+#	sentence Reference SpeakerProfiles.csv
 #	sentence Target_Phi 500 (Hz)
 #	sentence Target_Pitch 120 (Hz)
 #	sentence Target_Rate 3.8 (Syll/s)
@@ -51,8 +51,8 @@ if interactiveUse
 #
 label START
 beginPause: "Select recordings"
-	sentence: "Source", "ControlPseudonymization.tsv"
-	sentence: "Reference", "SpeakerProfiles.tsv"
+	sentence: "Source", "ControlPseudonymization.csv"
+	sentence: "Reference", "SpeakerProfiles.csv"
 	sentence: "Target Phi", "500 (Hz)"
 	sentence: "Target Pitch", "120 (Hz)"
 	sentence: "Target Rate", "3.8 (Syll/s)"
@@ -111,7 +111,7 @@ if index_regex(source$, "\.(tsv|csv)$")
 	if index_regex(source$, "\.tsv$")
 		controlTable = Read Table from tab-separated file: source$
 	else
-		controlTable = Read from file: source$
+		controlTable = Read Table from semicolon-separated file: source$
 	endif
 	# Complete columns
 	if controlTable > 0
@@ -177,7 +177,7 @@ if index_regex(reference$, "\.(tsv|csv)$")
 	if index_regex(reference$, "\.tsv$")
 		.tmp = Read Table from tab-separated file: reference$
 	else
-		.tmp = Read from file: reference$
+		.tmp = Read Table from semicolon-separated file: reference$
 	endif
 	.numRows = Get number of rows
 	selectObject: .tmp
@@ -347,7 +347,7 @@ for .control to .numControlLines
 			.randomize_intensityList$ [.numTargets] = .randomize_intensityList$ [.prev]
 		endif
 	endwhile
-	
+
 	# Fill in the targets
 	for .i to .numTargets
 		lastRandom$ = ""
@@ -431,7 +431,7 @@ for .control to .numControlLines
 			Remove
 			.sourceSound = remove_pauses.newSound
 		endif
-	
+
 		currentRefName$ = currentReference$
 		if currentReference$ = "-"
 			currentRefName$ = currentSource$
@@ -488,12 +488,11 @@ for .control to .numControlLines
 			.referenceArtRate = vocalTractAndSpeakerMeasures.artRate
 			.duration = vocalTractAndSpeakerMeasures.duration
 			
-			
 			call bandIntensityMeasures .refRecording .phi
 			for .i from 0 to 5
 				.int'.i' = bandIntensityMeasures.int'.i'
 			endfor
-	
+
 			# Add to table
 			selectObject: speakerDataTable
 			.dataRow = Get number of rows
@@ -528,6 +527,27 @@ for .control to .numControlLines
 			.current_Rate = .currentTarget_RateList[.i]
 			.current_Randomize_bands$ = .currentRandomize_bandsList$ [.i]
 			.current_Randomize_intensity$ = .currentRandomize_intensityList$ [.i]
+			# Exaggerate gender differences
+			if index_regex(.phiTargetList$ [.i], "\[-?[0-9\.]+\]")
+				.exaggeration = 0
+				# target Phi
+				.exaggeration = extractNumber(.phiTargetList$ [.i], "[")
+				selectObject: speakerDataTable
+				.phi = Get value: .dataRow, "Phi"
+				.current_Phi = .current_Phi + .exaggeration*(.current_Phi - .phi)
+
+				# Bands
+				.newBands$ = replace_regex$(.current_Randomize_bands$, "^(F0=[^F]*)F.*$", "\1", 0)
+				for .formantNum to 5
+					if index(.current_Randomize_bands$, "F'.formantNum'=")
+						.tmpPhi = Get value: .dataRow, "Phi'.formantNum'"
+						.tmpTarget = extractNumber(.current_Randomize_bands$, "F'.formantNum'=")
+						.tmpTarget = .tmpTarget + .exaggeration*(.tmpTarget - .tmpPhi)
+						.newBands$ += "F'.formantNum'='.tmpTarget', "
+					endif
+				endfor
+				.current_Randomize_bands$ = .newBands$
+			endif
 			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, .current_Randomize_bands$, .current_Randomize_intensity$, ignore_freq_bands
 			.target = createPseudonymousSpeech.target
 			if .currentnameList$ [.i] = "-" or .currentnameList$ [.i] = ""
@@ -971,8 +991,9 @@ procedure vocalTractAndSpeakerMeasures .sound
 	selectObject: .sound
 	.duration = Get total duration
 	Scale intensity: 70.0
+
 	.formants = noprogress To Formant (robust): 0.01, 5, 5500, 0.025, 50, 1.5, 5, 1e-06
-	
+
 	call extract_speaker_characteristics: .sound .formants
 	.medianPitch = extract_speaker_characteristics.medianF0
 	.medianF1 = extract_speaker_characteristics.medianF1
@@ -990,7 +1011,7 @@ procedure vocalTractAndSpeakerMeasures .sound
 	@select_vowel_target: "F", .sound, .formants, .formants, .syllableKernels
 	.vowelTier = select_vowel_target.vowelTier
 	.targetTier = select_vowel_target.targetTier
-	
+
 	@estimate_Vocal_Tract_Length: .formants, .syllableKernels, .vowelTier
 	.vocalTractLength = estimate_Vocal_Tract_Length.vtl
 	.phi = estimate_Vocal_Tract_Length.phi
@@ -1047,7 +1068,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 		.randomCorpus$ = extractWord$(.speaker$, "=")
 		.speaker$ = replace_regex$(.speaker$, "\s*=.*$",  "", 0)
 	endif
-	if .speaker$ = "RandomXgender"
+	if startsWith(.speaker$, "RandomXgender")
 		.dataRow = Search column: "Reference", .exclude$
 		.gender$ = Get value: .dataRow, "Gender"
 		if .gender$ = "m"
@@ -1057,7 +1078,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 		else
 			.speaker$ = "Random"
 		endif
-	elsif .speaker$ = "RandomSgender"
+	elsif startsWith(.speaker$, "RandomSgender")
 		.dataRow = Search column: "Reference", .exclude$
 		.gender$ = Get value: .dataRow, "Gender"
 		if .gender$ = "m"
@@ -1068,7 +1089,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 			.speaker$ = "Random"
 		endif
 	endif
-	if .speaker$ = "RandomMale" or .speaker$ = "RandomFemale"
+	if startsWith(.speaker$, "RandomMale") or startsWith(.speaker$, "RandomFemale")
 		if lastRandom$ <> ""
 			.speaker$ = lastRandom$
 		elsif .speaker$ = "RandomMale"
@@ -1096,12 +1117,12 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 			endwhile
 			lastRandom$ = .speaker$
 		endif
-	elsif .speaker$ = "Random"
+	elsif startsWith(.speaker$, "Random")
 		if lastRandom$ <> ""
 			.speaker$ = lastRandom$
 		else
 			.corpus$ = ""
-			while .speaker$ = "Random" or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .corpus$ <> .randomCorpus$
+			while startsWith(.speaker$, "Random") or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .corpus$ <> .randomCorpus$
 				.dataRow = randomInteger(1, .numRows)
 				.speaker$ = Get value: .dataRow, "Reference"
 				if .randomCorpus <> ""
