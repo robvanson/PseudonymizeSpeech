@@ -527,7 +527,8 @@ for .control to .numControlLines
 			.current_Rate = .currentTarget_RateList[.i]
 			.current_Randomize_bands$ = .currentRandomize_bandsList$ [.i]
 			.current_Randomize_intensity$ = .currentRandomize_intensityList$ [.i]
-			# Exaggerate gender differences
+
+			# Exaggerate differences between Source and Target
 			if index_regex(.phiTargetList$ [.i], "\[-?[0-9\.]+\]")
 				.exaggeration = 0
 				# target Phi
@@ -547,7 +548,20 @@ for .control to .numControlLines
 					endif
 				endfor
 				.current_Randomize_bands$ = .newBands$
+
+				# Intensities, these are REVERSED to soften "sharp" speech
+				.newIntensities$ = ""
+				for .formantNum from 0 to 5
+					if index(.current_Randomize_intensity$, "F'.formantNum'=")
+						.tmpPhi = Get value: .dataRow, "Int'.formantNum'"
+						.tmpTarget = extractNumber(.current_Randomize_intensity$, "F'.formantNum'=")
+						.tmpTarget = .tmpTarget - .exaggeration*(.tmpTarget - .tmpPhi)
+						.newIntensities$ += "F'.formantNum'='.tmpTarget', "
+					endif
+				endfor
+				.current_Randomize_intensity$ = .newIntensities$
 			endif
+			
 			@createPseudonymousSpeech: .sourceSound, speakerDataTable, .dataRow, .current_Phi, .current_Pitch, .current_Rate, .current_Randomize_bands$, .current_Randomize_intensity$, ignore_freq_bands
 			.target = createPseudonymousSpeech.target
 			if .currentnameList$ [.i] = "-" or .currentnameList$ [.i] = ""
