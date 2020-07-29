@@ -1151,6 +1151,10 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 			lastRandom$ = .speaker$+.exaggeration$
 		endif
 	endif
+	
+	# The speaker name might have been changed again
+	.speaker$ = replace_regex$(.speaker$, "\[[^\]]*\]", "", 0)
+
 	.dataRow = Search column: "Reference", .speaker$
 	if .dataRow <= 0
 		exitScript: "Speaker not found: ", .speaker$
