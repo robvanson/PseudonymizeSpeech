@@ -1082,7 +1082,9 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 		.randomCorpus$ = extractWord$(.speaker$, "=")
 		.speaker$ = replace_regex$(.speaker$, "\s*=.*$",  "", 0)
 	endif
+	.exaggeration$ = ""
 	if index(.speaker$, "[")
+		.exaggeration$ = replace_regex$(.speaker$, "^[^\[]*(\[[^\]]*\]).*$", "\1", 0)
 		.speaker$ = replace_regex$(.speaker$, "\[[^\]]*\]", "", 0)
 	endif
 	if .speaker$ = "RandomXgender"
@@ -1120,7 +1122,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 					.corpus$ = Get value: .dataRow, "Corpus"
 				endif
 			endwhile
-			lastRandom$ = .speaker$
+			lastRandom$ = .speaker$+.exaggeration$
 		elsif .speaker$ = "RandomFemale"
 			.gender$ = ""
 			.corpus$ = ""
@@ -1132,7 +1134,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 					.corpus$ = Get value: .dataRow, "Corpus"
 				endif
 			endwhile
-			lastRandom$ = .speaker$
+			lastRandom$ = .speaker$+.exaggeration$
 		endif
 	elsif .speaker$ = "Random"
 		if lastRandom$ <> ""
@@ -1146,7 +1148,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 					.corpus = Get value: .dataRow, "Corpus"
 				endif
 			endwhile
-			lastRandom$ = .speaker$
+			lastRandom$ = .speaker$+.exaggeration$
 		endif
 	endif
 	.dataRow = Search column: "Reference", .speaker$
