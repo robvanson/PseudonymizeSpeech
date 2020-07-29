@@ -555,7 +555,7 @@ for .control to .numControlLines
 					if index(.current_Randomize_intensity$, "F'.formantNum'=")
 						.tmpPhi = Get value: .dataRow, "Int'.formantNum'"
 						.tmpTarget = extractNumber(.current_Randomize_intensity$, "F'.formantNum'=")
-						.tmpTarget = .tmpTarget - .exaggeration*(.tmpTarget - .tmpPhi)
+						.tmpTarget = .tmpTarget + .exaggeration*(.tmpTarget - .tmpPhi)
 						.newIntensities$ += "F'.formantNum'='.tmpTarget', "
 					endif
 				endfor
@@ -1082,7 +1082,10 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 		.randomCorpus$ = extractWord$(.speaker$, "=")
 		.speaker$ = replace_regex$(.speaker$, "\s*=.*$",  "", 0)
 	endif
-	if startsWith(.speaker$, "RandomXgender")
+	if index(.speaker$, "[")
+		.speaker$ = replace_regex$(.speaker$, "\[[^\]]*\]", "", 0)
+	endif
+	if .speaker$ = "RandomXgender"
 		.dataRow = Search column: "Reference", .exclude$
 		.gender$ = Get value: .dataRow, "Gender"
 		if .gender$ = "m"
@@ -1092,7 +1095,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 		else
 			.speaker$ = "Random"
 		endif
-	elsif startsWith(.speaker$, "RandomSgender")
+	elsif .speaker$ = "RandomSgender"
 		.dataRow = Search column: "Reference", .exclude$
 		.gender$ = Get value: .dataRow, "Gender"
 		if .gender$ = "m"
@@ -1103,7 +1106,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 			.speaker$ = "Random"
 		endif
 	endif
-	if startsWith(.speaker$, "RandomMale") or startsWith(.speaker$, "RandomFemale")
+	if .speaker$ = "RandomMale" or .speaker$ = "RandomFemale"
 		if lastRandom$ <> ""
 			.speaker$ = lastRandom$
 		elsif .speaker$ = "RandomMale"
@@ -1131,7 +1134,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 			endwhile
 			lastRandom$ = .speaker$
 		endif
-	elsif startsWith(.speaker$, "Random")
+	elsif .speaker$ = "Random"
 		if lastRandom$ <> ""
 			.speaker$ = lastRandom$
 		else
