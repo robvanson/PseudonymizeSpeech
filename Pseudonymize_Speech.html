@@ -12,7 +12,7 @@ Running the script</h3>
 When running the script, a form will appear with the following fields:</p>
 <ul>
 <li>
-&nbsp;<i>Source</i><i></i>: Path to the audio file to change. The path may contain a (one!) wildcard character (*) or end in a "/", in which case all the matching files will be pseudonymized. If the file name ends in <code>.tsv</code> or <code>.csv</code>, this is interpreted as a table from which the values needed are read. This table allows to automate pseudonymization of a large number of recordings. 
+&nbsp;<i>Source</i><i></i>: Path to the audio file to change. The path may contain one (and only one!) wildcard character (*) or end in a "/", in which case all the matching files will be pseudonymized. If the file name ends in <code>.tsv</code> or <code>.csv</code>, this is interpreted as a table from which the values needed are read. This table allows to automate pseudonymization of a large number of recordings. 
 <li>
 &nbsp;<i>Reference</i>: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are measured to construct a <i>speaker profile</i>. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. The path may contain a (one!) wild card character (*), end in a "/", or point to a <code>.tsv</code> or <code>.csv</code> file with a table of speaker values. If <i>Reference</i> is <code>-</code>, the source file is used to determine the speaker characteristics.
 <li>
