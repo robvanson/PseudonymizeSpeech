@@ -12,9 +12,9 @@ Running the script</h3>
 When running the script, a form will appear with the following fields:</p>
 <ul>
 <li>
-&nbsp;<i>Source</i><i></i>: Path to the audio file to change. The path may contain a (one!) wildcard character (*) or end in a "/", in which case all the matching files will be pseudonymized. If the file name ends in <code>.tsv</code> or <code>.csv</code>, this is interpreted as a table from which the values needed are read. This table allows to automate pseudonymization of a large number of recordings. 
+&nbsp;<i>Source</i><i></i>: Path to the audio file to change. The path may contain one (and only one!) wildcard character (*) or end in a "/", in which case all the matching files will be pseudonymized. If the file name ends in <code>.tsv</code> or <code>.csv</code>, this is interpreted as a table from which the values needed are read. This table allows to automate pseudonymization of a large number of recordings. 
 <li>
-&nbsp;<i>Reference</i>: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are measured to construct a <i>speaker profile</i>. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. The path may contain a (one!) wild card character (*), end in a "/", or point to a <code>.tsv</code> or <code>.csv</code> file with a table of speaker values. If <i>Reference</i> is <code>-</code>, the source file is used to determine the speaker characteristics.
+&nbsp;<i>Reference</i>: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are measured to construct a <i>speaker profile</i>. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. The path may contain one (and only one!) wild card character (*), end in a "/", or point to a <code>.tsv</code> or <code>.csv</code> file with a table of speaker values. If <i>Reference</i> is <code>-</code>, the source file is used to determine the speaker characteristics.
 <li>
 &nbsp;<i>Target Phi</i>: (&#966;) The "neutral" F<sub>1</sub> value corresponding to the target vocal tract length.
 <li>
@@ -140,6 +140,14 @@ Example frequency values for F0-F5 for a speaker could be, frequencies: <i>550, 
 A special option is to replace frequency bands by modulated <i>pink noise</i>. This option might be useful when it is desired to remove all information from certain spectral regions, e.g., for studying <i>Automatic Speaker Identification</i>. For example, <i>Randomize bands</i> "F4 = NOISE" will replace the band around F4 with modulated pink noise scaled to the original intensity. This will also work for F6-F9, e.g., "F7=NOISE". Note, &#966; frequency values or randomization are <i>not</i> supported for F6-F9. </p>
 <p>
 The <i>Ignore freq bands</i> checkbox is supplied to suppress all individual frequency band and intensity changes. This option is most usefull in testing the effectivity of frequency band and intensity changes.</p>
+<h3>
+Exaggerated or caricature targets</h3>
+<p>
+The differences between the source and the target &#966;'s, both &#966;, the bands &#966;<sub>1</sub>-&#966;<sub>5</sub>, and the intensity bands &#966;<sub>0</sub>-&#966;<sub>5</sub>, can be exaggerated, or diminished, by adding a multiplication factor between []-brackets to the target. For instance, when selecting random cross-gender targets, <i>RandomXgender[1.5]=ASVspoof2019</i>, the effective target will be: </p>
+<p>
+&#966;<sub>effective</sub> = &#966;<sub>target</sub> + 1.5&#183;(&#966;<sub>target</sub> - &#966;<sub>source</sub>). </p>
+<p>
+The exaggeration factor between the []-brackets can also be negative. </p>
 <h3>
 <i>References</i></h3>
 <p>
