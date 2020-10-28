@@ -79,7 +79,7 @@ Optional columns:</p>
 <h3>
 Reference</h3>
 <p>
-If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code>.csv</code> or <code>.tsv</code> table containing <i>speaker profiles</i>. Such a table should have the following column labels: </p>
+If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code>.csv</code> or <code>.tsv</code> table containing <i>speaker profiles</i>. For a single source speaker, the format is: <i>&lt;speaker id&gt;@table path</i>, e.g., <i>F24I@Examples/SpeakerProfiles.csv</i>. Such a table should have the following column labels: </p>
 <p>
 <code>Reference MedianPitch Phi Phi1 Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration</code></p>
 <ul>
@@ -148,6 +148,66 @@ The differences between the source and the target &#966;'s, both &#966;, the ban
 &#966;<sub>effective</sub> = &#966;<sub>target</sub> + 1.5&#183;(&#966;<sub>target</sub> - &#966;<sub>source</sub>). </p>
 <p>
 The exaggeration factor between the []-brackets can also be negative. </p>
+<h3>
+Examples</h3>
+<p>
+Two examples are available:</p>
+<p>
+Convert a single speech recording:</p>
+<ul>
+<li>
+&nbsp;<i>Source</i><i></i>: <code>Examples/Audio/F24I2PS27A_fm.aifc</code>
+<li>
+&nbsp;<i>Reference</i>: <code>F24I@Examples/SpeakerProfiles.csv</code>
+<li>
+&nbsp;<i>Target Phi</i>: <code>500</code>
+<li>
+&nbsp;<i>Target Pitch</i>: <code>120</code>
+<li>
+&nbsp;<i>Target Rate</i>: <code>3.8</code>
+<li>
+&nbsp;<i>Target Directory</i>: <code>Examples/Pseudonymized</code>
+<li>
+&nbsp;<i>Randomize bands</i>: <code>F0, F3, F4, F5</code>
+<li>
+&nbsp;<i>Randomize intensity</i>: <code>F0, F3, F4, F5</code>
+<li>
+&nbsp;<i>Output format</i>: <code>WAV</code>
+<li>
+&nbsp;<i>Remove pauses</i>: <code>no</code>
+<li>
+&nbsp;<i>Ignore freq bands</i>: <code>no</code>
+<li>
+&nbsp;<i>Switch F4 F5</i>: <code>no</code>
+</ul>
+<p>
+Convert a list of speech recordings in a more complex manner:</p>
+<ul>
+<li>
+&nbsp;<i>Source</i><i></i>: <code>Examples/ControlPseudonymization.csv</code>
+<li>
+&nbsp;<i>Reference</i>: <code>Examples/SpeakerProfiles.csv</code>
+<li>
+&nbsp;<i>Target Phi</i>: <code>500</code>
+<li>
+&nbsp;<i>Target Pitch</i>: <code>120</code>
+<li>
+&nbsp;<i>Target Rate</i>: <code>3.8</code>
+<li>
+&nbsp;<i>Target Directory</i>: <code>Examples/Pseudonymized</code>
+<li>
+&nbsp;<i>Randomize bands</i>: <code>F0, F3, F4, F5</code>
+<li>
+&nbsp;<i>Randomize intensity</i>: <code>F0, F3, F4, F5</code>
+<li>
+&nbsp;<i>Output format</i>: <code>WAV</code>
+<li>
+&nbsp;<i>Remove pauses</i>: <code>no</code>
+<li>
+&nbsp;<i>Ignore freq bands</i>: <code>no</code>
+<li>
+&nbsp;<i>Switch F4 F5</i>: <code>no</code>
+</ul>
 <h3>
 <i>References</i></h3>
 <p>
