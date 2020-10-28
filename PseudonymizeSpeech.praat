@@ -51,12 +51,14 @@ if interactiveUse
 #
 label START
 beginPause: "Select recordings"
-	sentence: "Source", "ControlPseudonymization.csv"
-	sentence: "Reference", "SpeakerProfiles.csv"
+	#sentence: "Source", "Examples/ControlPseudonymization.csv"
+	#sentence: "Reference", "Examples/SpeakerProfiles.csv"
+	sentence: "Source", "Examples/Audio/F24I2PS27A_fm.aifc"
+	sentence: "Reference", "F24I@Examples/SpeakerProfiles.csv"
 	sentence: "Target Phi", "500 (Hz)"
 	sentence: "Target Pitch", "120 (Hz)"
 	sentence: "Target Rate", "3.8 (Syll/s)"
-	sentence: "Target Directory", "pseudonymized"
+	sentence: "Target Directory", "Examples/Pseudonymized"
 	sentence: "Randomize bands", "F0, F3, F4, F5"
 	sentence: "Randomize intensity", "F0, F3, F4, F5"
 	optionMenu: "Output format", 1
@@ -89,6 +91,14 @@ endif
 writeFileLine: "PseudonymizeSpeechLOG.log", date$()
 
 # Clean up input
+referenceValue$ = reference$
+if index(reference$, "@") > 0
+	referenceValue$ = replace_regex$(referenceValue$, "@.*$", "", 0)
+	reference$ = replace_regex$(reference$, "^[^@]*@", "", 0)
+endif
+if referenceValue$ = "-"
+	referenceValue$ = source$
+endif
 target_Phi$ = replace$(target_Phi$, " (Hz)", "", 0)
 target_Pitch$ = replace$(target_Pitch$, " (Hz)", "", 0)
 target_Rate$ = replace$(target_Rate$, " (Syll/s)", "", 0)
@@ -170,6 +180,16 @@ else
 	controlTarget_Directory = 6
 	controlRandomize_bands = 7
 	controlRandomize_intensity = 8
+	
+	Set string value: 1, "Source", source$
+	Set string value: 1, "Reference", referenceValue$
+	Set string value: 1, "Target_Phi", target_Phi$
+	Set string value: 1, "Target_Pitch", target_Pitch$
+	Set string value: 1, "Target_Rate", target_Rate$
+	Set string value: 1, "Target_Directory", target_Directory$
+	Set string value: 1, "Randomize_bands", randomize_bands$
+	Set string value: 1, "Randomize_intensity", randomize_intensity$
+	
 endif
 
 if index_regex(reference$, "\.(tsv|csv)$")
@@ -448,7 +468,11 @@ for .control to .numControlLines
 					.wildcard$ = ""
 				endif
 				.referenceList = Create Strings as file list: "ReferenceList", currentReference$+.wildcard$
-				.refDirectory$ = replace_regex$(currentReference$, "[\\/][^\\/]+$", "", 0)
+				if index_regex(currentReference$, "[\\/]") <= 0
+					.refDirectory$ = "."
+				else
+					.refDirectory$ = replace_regex$(currentReference$, "[\\/][^\\/]+$", "", 0)
+				endif
 				.numRefFiles = Get number of strings
 				.tmpList [1] = -1
 				for .r to .numRefFiles
@@ -744,7 +768,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 	
 	# Change lower formants
 	selectObject: .sourceSound
-	.target = noprogress Change gender: 60, 600, .target_Phi / .phi, .target_Pitch, 1, .artRate / .target_Rate
+	.target = nowarn noprogress Change gender: 60, 600, .target_Phi / .phi, .target_Pitch, 1, .artRate / .target_Rate
 	Scale intensity: 70.0
 	Rename: "Pseudonymized"
 	
@@ -791,7 +815,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyF0 or modifyInt0
 			selectObject: .sourceSound
 			if modifyF0
-				.intermediateSoundF0 = noprogress Change gender: 60, 600, .target_Phi0 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
+				.intermediateSoundF0 = nowarn noprogress Change gender: 60, 600, .target_Phi0 / .phi, .target_Pitch, 1, .artRate / .target_Rate 
 			else
 				selectObject: .target
 				.intermediateSoundF0 = Copy: "CleanCopy"
@@ -813,7 +837,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyF1 or modifyInt1
 			selectObject: .sourceSound
 			if modifyF1
-				.intermediateSoundF1 = noprogress Change gender: 60, 600, .target_Phi1 / .phi1, .target_Pitch, 1, .artRate / .target_Rate 
+				.intermediateSoundF1 = nowarn noprogress Change gender: 60, 600, .target_Phi1 / .phi1, .target_Pitch, 1, .artRate / .target_Rate 
 			else
 				selectObject: .target
 				.intermediateSoundF1 = Copy: "CleanCopy"
@@ -835,7 +859,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyF2 or modifyInt2
 			selectObject: .sourceSound
 			if modifyF2
-				.intermediateSoundF2 = noprogress Change gender: 60, 600, .target_Phi2 / .phi2, .target_Pitch, 1, .artRate / .target_Rate 
+				.intermediateSoundF2 = nowarn noprogress Change gender: 60, 600, .target_Phi2 / .phi2, .target_Pitch, 1, .artRate / .target_Rate 
 			else
 				selectObject: .target
 				.intermediateSoundF2 = Copy: "CleanCopy"
@@ -857,7 +881,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyF3 or modifyInt3
 			selectObject: .sourceSound
 			if modifyF3
-				.intermediateSoundF3 = noprogress Change gender: 60, 600, .target_Phi3 / .phi3, .target_Pitch, 1, .artRate / .target_Rate 
+				.intermediateSoundF3 = nowarn noprogress Change gender: 60, 600, .target_Phi3 / .phi3, .target_Pitch, 1, .artRate / .target_Rate 
 			else
 				selectObject: .target
 				.intermediateSoundF3 = Copy: "CleanCopy"
@@ -879,7 +903,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyF4 or modifyInt4
 			selectObject: .sourceSound
 			if modifyF4
-				.intermediateSoundF4 = noprogress Change gender: 60, 600, .target_Phi4 / .phi4, .target_Pitch, 1, .artRate / .target_Rate 
+				.intermediateSoundF4 = nowarn noprogress Change gender: 60, 600, .target_Phi4 / .phi4, .target_Pitch, 1, .artRate / .target_Rate 
 			else
 				selectObject: .target
 				.intermediateSoundF4 = Copy: "CleanCopy"
@@ -901,7 +925,7 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		if modifyF5 or modifyInt5
 			selectObject: .sourceSound
 			if modifyF5
-				.intermediateSoundF5 = noprogress Change gender: 60, 600, .target_Phi5 / .phi5, .target_Pitch, 1, .artRate / .target_Rate 
+				.intermediateSoundF5 = nowarn noprogress Change gender: 60, 600, .target_Phi5 / .phi5, .target_Pitch, 1, .artRate / .target_Rate 
 			else
 				selectObject: .target
 				.intermediateSoundF5 = Copy: "CleanCopy"
