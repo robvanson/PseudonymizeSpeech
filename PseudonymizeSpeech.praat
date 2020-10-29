@@ -91,6 +91,11 @@ endif
 writeFileLine: "PseudonymizeSpeechLOG.log", date$()
 
 # Clean up input
+generateOnly = 0
+if reference$ = "GENERATE" or reference$ = "*"
+	generateOnly = 1
+	reference$ = "-"
+endif
 referenceValue$ = reference$
 if index(reference$, "@") > 0
 	referenceValue$ = replace_regex$(referenceValue$, "@.*$", "", 0)
@@ -433,7 +438,12 @@ for .control to .numControlLines
 	endfor		
 	
 	# Process all sourcefiles
-	for .f to .numSourceFiles
+	.number = .numSourceFiles
+	# Only generate the SpeakerDataTable
+	if generateOnly
+		.number = 1
+	endif
+	for .f to .number
 		selectObject: .sourceList
 		.fileName$ = Get string: .f
 		appendFileLine: "PseudonymizeSpeechLOG.log", .sourceDirectory$+"/"+.fileName$
@@ -545,6 +555,11 @@ for .control to .numControlLines
 		endif
 		selectObject: speakerDataTable
 		
+		# Skip the rest if it is not necessary
+		if generateOnly
+			goto SKIPSOUNDGENERATION
+		endif
+		
 		for .i to .numTargets
 			.current_Phi = .currentTarget_PhiList[.i]
 			.current_Pitch = .currentTarget_PitchList[.i]
@@ -616,6 +631,8 @@ for .control to .numControlLines
 			selectObject: .target
 			Remove
 		endfor
+		
+		label SKIPSOUNDGENERATION
 		
 		selectObject: .sourceSound
 		Remove
