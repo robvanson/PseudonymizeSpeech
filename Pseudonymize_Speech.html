@@ -16,11 +16,11 @@ When running the script, a form will appear with the following fields:</p>
 <li>
 &nbsp;<i>Reference</i>: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are measured to construct a <i>speaker profile</i>. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. The path may contain one (and only one!) wild card character (*), end in a "/", or point to a <code>.tsv</code> or <code>.csv</code> file with a table of speaker values. If <i>Reference</i> is <code>-</code>, the source file is used to determine the speaker characteristics.
 <li>
-&nbsp;<i>Target Phi</i>: (&#966;) The "neutral" F<sub>1</sub> value corresponding to the target vocal tract length.
+&nbsp;<i>Target Phi</i>: (&#966;) The "neutral" F<sub>1</sub> value corresponding to the target vocal tract length. For instance, 560 Hz for an average female or 535 Hz for an average male speaker.
 <li>
-&nbsp;<i>Target Pitch</i>: The desired F<sub>0</sub> value.
+&nbsp;<i>Target Pitch</i>: The desired F<sub>0</sub> value. For instance, 110 Hz for an average male or 175 Hz for an average female voice.
 <li>
-&nbsp;<i>Target Rate</i>: The desired speaking rate (articulation rate) in syllables per second.
+&nbsp;<i>Target Rate</i>: The desired speaking rate (articulation rate) in syllables per second, e.g., 4.2 syl/second for average read speech.
 <li>
 &nbsp;<i>Target Directory</i>: Path to the directory where the results are stored. Existing files are not overwritten, but a number is appended to the filename instead.
 <li>
@@ -120,12 +120,12 @@ These fields accept a list of comma separated values, e.g.,</p>
 <dd>
 <code>Target Phi: 510, 550, 585</code>
 <dd>
-<code>Target Pitch: 120, 150, 185</code>
+<code>Target Pitch: 110, 145, 175</code>
 <dd>
 <code>Target Rate: 3.8, 4.0, 4.2</code>
 </dl>
 <p>
-These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 120, 3.8), then the second of each list (550, 150, 4.0), then the third (585, 185, 4.2), etc. If one list ends before the others, the last value is reused. A value of "0" for any of these indicates that the corresponding reference value, &#966;, median F0, or articulation rate, will be used, i.e., no change. </p>
+These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 110, 3.8), then the second of each list (550, 145, 4.0), then the third (585, 175, 4.2), etc. If one list ends before the others, the last value is reused. A value of "0" for any of these indicates that the corresponding reference value, &#966;, median F0, or articulation rate, will be used, i.e., no change. </p>
 <p>
 If a <i>label</i> of a speaker is entered in the <i>Target Phi</i> field, its profile will be copied into this and the other fields, including the <i>Randomization</i> fields. Effectively, the system will convert the input speech using the parameters of the target speaker. It is best to empty all the other fields in this case. </p>
 <p>
