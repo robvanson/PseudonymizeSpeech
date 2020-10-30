@@ -38,7 +38,7 @@ ManPagesTextFile
 
 <entry> "Reference"
 <normal> "If the %%Reference% is not a path to soundfiles, it can be a path to a $$.csv$ or $$.tsv$ table containing %%speaker profiles%. For a single source speaker, the format is: %%<speaker id>\@ table path%, e.g., %%F24I\@ Examples/SpeakerProfiles.csv%. Such a table should have the following column labels: "
-<normal> "$$Reference MedianPitch Phi Phi1 Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration$"
+<normal> "$$Reference MedianPitch Phi Phi1 Phi2 Phi3 Phi4 Phi5 ArtRate Int0 Int1 Int2 Int3 Int4 Int5 Duration Corpus Gender$"
 <list_item> "\bu $$Reference$: A label indicating the source audio or the speaker."
 <list_item> "\bu $$MedianPitch$: Median F0 value of the speaker (audio)."
 <list_item> "\bu $$Phi$: The \fi value calculated according to [1]."
