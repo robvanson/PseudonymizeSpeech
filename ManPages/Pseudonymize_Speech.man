@@ -1,7 +1,7 @@
 ManPagesTextFile
 "Pseudonymize Speech" "Rob van Son" 20191017 0
 
-<script> 3 2.5 "
+<script> 2.5 2.5 "
 	Axes: 0, 1, 0, 1
 	Insert picture from file: ""Pseudonymized_Speech_1F5E3.png"", 0, 1, 0, 1
 "
