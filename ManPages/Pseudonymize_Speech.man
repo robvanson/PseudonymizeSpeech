@@ -1,5 +1,11 @@
 ManPagesTextFile
 "Pseudonymize Speech" "Rob van Son" 20191017 0
+
+<script> 3 2.5 "
+	Axes: 0, 1, 0, 1
+	Insert picture from file: ""Pseudonymized_Speech_1F5E3.png"", 0, 1, 0, 1
+"
+
 <intro> "A %%Praat% script to pseudonymize speech. That is, %%Pseudonymize Speech% tries to make it difficult to recognize the speaker while still retaining relevant (para-)linguistic features and intelligibility."
 
 <entry> "Running the script"
