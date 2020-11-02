@@ -462,16 +462,24 @@ for .control to .numControlLines
 			.sourceSound = remove_pauses.newSound
 		endif
 
+		# Handle "-" as a reference
 		currentRefName$ = currentReference$
 		if currentReference$ = "-"
 			currentRefName$ = currentSource$
+			# If there are more source files, use the whole list as the reference
+			if .numSourceFiles > 1
+				currentReference$ = currentSource$
+			endif
 		endif
 		selectObject: speakerDataTable
 		.dataRow = Search column: "Reference", currentRefName$
 		if .dataRow <= 0
+			# There is only a single source file, use it
 			if currentReference$ = "-"
 				selectObject: .sourceSound
 				.refRecording = Copy: "Reference"
+				
+			# There are more source files, concatenate them to create a reference
 			else
 				.wildcard$ = "*"
 				if index(currentReference$, "*") > 0 or endsWith(currentReference$, "/")
