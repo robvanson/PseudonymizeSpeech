@@ -232,6 +232,9 @@ if index_regex(reference$, "\.(tsv|csv)$")
 			Set string value: .r, "Gender", .gender$
 		endfor
 	endif
+	# Add and empty row for new values
+	selectObject: .tmp
+	Append row
 	
 	if .tmp > 0
 		selectObject: speakerDataTable
@@ -475,21 +478,25 @@ for .control to .numControlLines
 		.dataRow = Search column: "Reference", currentRefName$
 		if .dataRow <= 0
 			# There is only a single source file, use it
-			if currentReference$ = "-"
+			if currentReference$ = "-" or index_regex(currentReference$, "\.(?itsv|csv)$")
 				selectObject: .sourceSound
 				.refRecording = Copy: "Reference"
-				
+				currentRefName$ = currentSource$
 			# There are more source files, concatenate them to create a reference
 			else
+				.tmpReference$ = currentReference$
+				if index_regex(.tmpReference$, "\.(?itsv|csv)$")
+					.tmpReference$ = currentSource$
+				endif
 				.wildcard$ = "*"
-				if index(currentReference$, "*") > 0 or endsWith(currentReference$, "/")
+				if index(.tmpReference$, "*") > 0 or endsWith(.tmpReference$, "/")
 					.wildcard$ = ""
 				endif
-				.referenceList = Create Strings as file list: "ReferenceList", currentReference$+.wildcard$
-				if index_regex(currentReference$, "[\\/]") <= 0
+				.referenceList = Create Strings as file list: "ReferenceList", .tmpReference$+.wildcard$
+				if index_regex(.tmpReference$, "[\\/]") <= 0
 					.refDirectory$ = "."
 				else
-					.refDirectory$ = replace_regex$(currentReference$, "[\\/][^\\/]+$", "", 0)
+					.refDirectory$ = replace_regex$(.tmpReference$, "[\\/][^\\/]+$", "", 0)
 				endif
 				.numRefFiles = Get number of strings
 				.tmpList [1] = -1
@@ -499,7 +506,7 @@ for .control to .numControlLines
 					.tmpList [.r] = Read from file: .refDirectory$ + "/" + .tmp$
 				endfor
 				if .tmpList [1] <= 0
-					exitScript: "Reference not known: ", currentReference$
+					exitScript: "Reference not known: ", .tmpReference$
 				endif
 				selectObject: .tmpList [1]
 				if .numRefFiles > 1
