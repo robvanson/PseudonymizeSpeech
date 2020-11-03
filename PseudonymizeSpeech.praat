@@ -113,7 +113,7 @@ debugON = 1
 maximalPitchChange = 1.5
 maximalRateChange = 1.5
 # If this name is <> "", save the table
-saveReferenceTableName$ = "NEW_SpeakerDataTable.tsv"
+saveReferenceTableName$ = "NEW_SpeakerDataTable.csv"
 # Initialize the values used by the vowel triangle procedure
 call IntitalizeFormantSpace
 
@@ -485,7 +485,9 @@ for .control to .numControlLines
 			# There are more source files, concatenate them to create a reference
 			else
 				.tmpReference$ = currentReference$
-				if index_regex(.tmpReference$, "\.(?itsv|csv)$")
+				# Set reference to current source if the reference is a 
+				# Speaker Pofiles table or "GENERATE"
+				if index_regex(.tmpReference$, "\.(?itsv|csv)$") or generateOnly
 					.tmpReference$ = currentSource$
 				endif
 				.wildcard$ = "*"
@@ -657,14 +659,30 @@ for .control to .numControlLines
 
 	if saveReferenceTableName$ <> ""
 		selectObject: speakerDataTable
-		Save as tab-separated file: saveReferenceTableName$
+		if endsWith(saveReferenceTableName$, ".tsv")
+			Save as tab-separated file: saveReferenceTableName$
+		else
+			Save as semicolon-separated file: saveReferenceTableName$
+		endif
 	endif
 	
 	label NEXTLINE
 endfor
 if saveReferenceTableName$ <> ""
 	selectObject: speakerDataTable
-	Save as tab-separated file: saveReferenceTableName$
+	# Remove last, empty, row
+	.lastRow = Get number of rows
+	.lastRef$ = Get value: .lastRow, "Reference"
+	if .lastRef$ = ""
+		Remove row: .lastRow 
+	endif
+	
+	# Save
+	if endsWith(saveReferenceTableName$, ".tsv")
+		Save as tab-separated file: saveReferenceTableName$
+	else
+		Save as semicolon-separated file: saveReferenceTableName$
+	endif
 endif
 
 selectObject: controlTable
