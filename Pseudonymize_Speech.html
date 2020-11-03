@@ -14,7 +14,7 @@ When running the script, a form will appear with the following fields:</p>
 <li>
 &nbsp;<i>Source</i><i></i>: Path to the audio file to change. The path may contain one (and only one!) wildcard character (*) or end in a "/", in which case all the matching files will be pseudonymized. If the file name ends in <code>.tsv</code> or <code>.csv</code>, this is interpreted as a table from which the values needed are read. This table allows to automate pseudonymization of a large number of recordings. 
 <li>
-&nbsp;<i>Reference</i>: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are measured to construct a <i>speaker profile</i>. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. The path may contain one (and only one!) wild card character (*), end in a "/", or point to a <code>.tsv</code> or <code>.csv</code> file with a table of speaker values. If <i>Reference</i> is <code>-</code>, <code>*</code> or <code>GENERATE</code>, the source file is used to determine the speaker characteristics.
+&nbsp;<i>Reference</i>: Path to the audio file(s) containing the reference audio from which the basic features of the speaker are measured to construct a <i>speaker profile</i>. A lot of audio is needed to get reliable values for each speaker, preferably hundreds of seconds. The path may contain one (and only one!) wild card character (*), end in a "/", or point to a <code>.tsv</code> or <code>.csv</code> file with a table of speaker values. In case the reference path contains a wildcard, a single profile is calculated from all the matching audio files. If <i>Reference</i> is <code>-</code>, <code>*</code> or <code>GENERATE</code>, the source is used to determine the speaker characteristics.
 <li>
 &nbsp;<i>Target Phi</i>: (&#966;) The "neutral" F<sub>1</sub> value corresponding to the target vocal tract length. For instance, 560 Hz for an average female or 535 Hz for an average male speaker.
 <li>
@@ -111,7 +111,7 @@ If the <i>Reference</i> is not a path to soundfiles, it can be a path to a <code
 &nbsp;<code>Gender</code>: The gender of the speaker, <i>f</i> or <i>m</i>. Used with selecting target profiles. 
 </ul>
 <p>
-This table is automatically created when the main script is run using audio files as a reference. It can be saved after finishing the script as these calculations can take some time. The next time the script is run for the same speaker(s), the resulting table can be used as <i>Reference</i> input. If the <i>Reference</i> is <code>*</code> or <code>GENERATE</code>, only this table is generated, and no pseudonymized speech is produced.</p>
+This table is automatically created when the main script is run using audio files as a reference. It can be saved after finishing the script as these calculations can take some time. The next time the script is run for the same speaker(s), the resulting table can be used as <i>Reference</i> input. If the <i>Reference</i> is <code>*</code> or <code>GENERATE</code>, only this table is generated, and no pseudonymized speech is produced. In this last, <i>GENERATE</i>, case, any non-empty <i>Reference</i> labels in a source table will be interpreted as reference labels of the new <i>speaker profiles</i>.</p>
 <h3>
 Target Phi, Target Pitch, and Target Rate</h3>
 <p>
