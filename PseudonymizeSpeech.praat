@@ -338,13 +338,13 @@ for .control to .numControlLines
 		.prev = max(.numTargets, 1)
 		.numTargets += 1
 		
-		if .phiTargets$ <> "" and .phiTargets$ <> "0"
+		if .phiTargets$ <> ""
 			.phiTargetList$ [.numTargets] = replace_regex$(.phiTargets$, "^([^;, ]+).*$", "\1", 0)
 			.phiTargets$ = replace_regex$(.phiTargets$, "^[^;, ]+[,;]?", "", 0)
 		else
 			.phiTargetList$ [.numTargets] = .phiTargetList$ [.prev]
 		endif
-		if .pitchTargets$ <> "" and .pitchTargets$ <> "0"
+		if .pitchTargets$ <> ""
 			.pitchTargetList$ [.numTargets] = replace_regex$(.pitchTargets$, "^([^;, ]+).*$", "\1", 0)
 			.pitchTargets$ = replace_regex$(.pitchTargets$, "^[^;, ]+[,;]?", "", 0)
 		else
@@ -355,7 +355,7 @@ for .control to .numControlLines
 			endif
 			.pitchTargets$ = ""
 		endif
-		if .rateTargets$ <> "" and .rateTargets$ <> "0"
+		if .rateTargets$ <> ""
 			.rateTargetList$ [.numTargets] = replace_regex$(.rateTargets$, "^([^;, ]+).*$", "\1", 0)
 			.rateTargets$ = replace_regex$(.rateTargets$, "^[^;, ]+[,;]?", "", 0)
 		else
