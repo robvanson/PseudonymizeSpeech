@@ -379,7 +379,7 @@ for .control to .numControlLines
 	# Fill in the targets
 	for .i to .numTargets
 		lastRandom$ = ""
-		if index_regex(.phiTargetList$ [.i] ,"^[^0-9+-]")			
+		if (not index_regex(.phiTargetList$ [.i] ,"^[0-9+-]")) and (index_regex(.phiTargetList$ [.i] ,"^[^0-9+-]") or lastRandom$ <> "")			
 			@readSpeakerProfile: speakerDataTable, .phiTargetList$ [.i], currentReference$
 			.currentTarget_PhiList[.i] = readSpeakerProfile.phi
 			if lastRandom$ <> ""
@@ -392,7 +392,7 @@ for .control to .numControlLines
 			.currentnameList$ [.i] = "-";
 		endif
 
-		if index_regex(.pitchTargetList$ [.i] ,"^[^0-9+-]") or lastRandom$ <> ""
+		if (not index_regex(.pitchTargetList$ [.i] ,"^[0-9+-]")) and (index_regex(.pitchTargetList$ [.i] ,"^[^0-9+-]") or lastRandom$ <> "")
 			if index_regex(.pitchTargetList$ [.i] ,"^[^0-9+-]")
 				@readSpeakerProfile: speakerDataTable, .pitchTargetList$ [.i], currentReference$
 			else
@@ -408,7 +408,7 @@ for .control to .numControlLines
 			.currentTarget_PitchList[.i] = extractNumber(.pitchTargetList$ [.i], "")
 		endif
 
-		if index_regex(.rateTargetList$ [.i] ,"^[^0-9+-]") or lastRandom$ <> ""
+		if (not index_regex(.rateTargetList$ [.i] ,"^[0-9+-]")) and (index_regex(.rateTargetList$ [.i] ,"^[^0-9+-]") or lastRandom$ <> "")
 			if index_regex(.rateTargetList$ [.i] ,"^[^0-9+-]")
 				@readSpeakerProfile: speakerDataTable, .rateTargetList$ [.i], currentReference$
 			else
@@ -1218,7 +1218,7 @@ procedure readSpeakerProfile .speakerProfiles .speaker$ .exclude$
 			while startsWith(.speaker$, "Random") or .speaker$ = .exclude$ or not index_regex(.speaker$, "[a-zA-Z]") or .corpus$ <> .randomCorpus$
 				.dataRow = randomInteger(1, .numRows)
 				.speaker$ = Get value: .dataRow, "Reference"
-				if .randomCorpus <> ""
+				if .randomCorpus$ <> ""
 					.corpus = Get value: .dataRow, "Corpus"
 				endif
 			endwhile
@@ -1867,10 +1867,10 @@ endproc
 procedure switchBands .source .target_Pitch .low1 .high1 .low2 .high2
 	# Down transform low2 to low1
 	selectObject: .source
-	.tmp2 = noprogress Change gender: 60, 600, .low1 / .low2, .target_Pitch, 1, 1	
+	.tmp2 = noprogress nowarn Change gender: 60, 600, .low1 / .low2, .target_Pitch, 1, 1	
 	# Up transform low1 to low2
 	selectObject: .source
-	.tmp1 = noprogress Change gender: 60, 600, .low2 / .low1, .target_Pitch, 1, 1	
+	.tmp1 = noprogress nowarn Change gender: 60, 600, .low2 / .low1, .target_Pitch, 1, 1	
 	
 	@replaceBand: .source, .tmp2, .low1, .high1
 	.resultTmp = replaceBand.target
