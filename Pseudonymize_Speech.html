@@ -127,7 +127,7 @@ These fields accept a list of comma separated values, e.g.,</p>
 <p>
 These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 110, 3.8), then the second of each list (550, 145, 4.0), then the third (585, 175, 4.2), etc. If one list ends before the others, the last value is reused. A value of "0" for any of these indicates that the corresponding reference value, &#966;, median F0, or articulation rate, will be used, i.e., no change. </p>
 <p>
-If a <i>label</i> of a speaker is entered in the <i>Target Phi</i> field, its profile will be copied into this and the other fields, including the <i>Randomization</i> fields. Effectively, the system will convert the input speech using the parameters of the target speaker. It is best to empty all the other fields in this case. </p>
+If a <i>label</i> of a speaker is entered in the <i>Target Phi</i> field, its profile will be copied into this and the other fields, including the <i>Randomization</i> fields. Effectively, the system will convert the input speech using the parameters of the target speaker. The <i>Pitch</i> and <i>Rate</i> fields should be empty (or 0) in this case. </p>
 <p>
 The label <i>Random</i> will select a random speaker from the speaker profiles, different from the one that is converted. The labels <i>RandomFemale</i> and <i>RandomMale</i> work like <i>Random</i>, but they select random female or male speakers. The labels <i>RandomSgender</i> and <i>RandomXgender</i> select a random target speaker profile of the same, respectively, different gender as the source speaker. If no gender information is available, these latter labels work like <i>Random</i>. These labels can be followed by a "=" and a corpus name to limit selection to a single corpus. For example, <i>RandomSgender=ASVspoof2019</i> will limit the selection to speakers of the same gender from the corpus called <i>ASVspoof2019</i>.</p>
 <h3>
@@ -148,6 +148,8 @@ The differences between the source and the target &#966;'s, both &#966;, the ban
 &#966;<sub>effective</sub> = &#966;<sub>target</sub> + 1.5&#183;(&#966;<sub>target</sub> - &#966;<sub>source</sub>). </p>
 <p>
 The exaggeration factor between the []-brackets can also be negative. </p>
+<p>Note: The size of the changes in pitch and rate are maximized to prevent deterioration of the sound quality. This can be undone by setting the <i>maximalPitchChange</i> and 
+<i>maximalRateChange</i> variables in the script to a high value.</p>
 <h3>
 Examples</h3>
 <p>

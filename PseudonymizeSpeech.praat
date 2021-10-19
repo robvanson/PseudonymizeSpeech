@@ -45,6 +45,11 @@ interactiveUse = 1
 #interactiveUse = 0
 #
 # End of uncomment for non-interactive use
+#
+# Set paraameters
+debugON = 1
+maximalPitchChange = 1.5
+maximalRateChange = 1.5
 
 # if for interactive use
 if interactiveUse
@@ -109,9 +114,6 @@ target_Pitch$ = replace$(target_Pitch$, " (Hz)", "", 0)
 target_Rate$ = replace$(target_Rate$, " (Syll/s)", "", 0)
 output_format$ = replace_regex$(output_format$, "^.*$", "\L&", 0)
 
-debugON = 1
-maximalPitchChange = 1.5
-maximalRateChange = 1.5
 # If this name is <> "", save the table
 saveReferenceTableName$ = "NEW_SpeakerDataTable.csv"
 # Initialize the values used by the vowel triangle procedure
@@ -338,13 +340,13 @@ for .control to .numControlLines
 		.prev = max(.numTargets, 1)
 		.numTargets += 1
 		
-		if .phiTargets$ <> ""
+		if .phiTargets$ <> "" and .phiTargets$ <> "0"
 			.phiTargetList$ [.numTargets] = replace_regex$(.phiTargets$, "^([^;, ]+).*$", "\1", 0)
 			.phiTargets$ = replace_regex$(.phiTargets$, "^[^;, ]+[,;]?", "", 0)
 		else
 			.phiTargetList$ [.numTargets] = .phiTargetList$ [.prev]
 		endif
-		if .pitchTargets$ <> ""
+		if .pitchTargets$ <> "" and .pitchTargets$ <> "0"
 			.pitchTargetList$ [.numTargets] = replace_regex$(.pitchTargets$, "^([^;, ]+).*$", "\1", 0)
 			.pitchTargets$ = replace_regex$(.pitchTargets$, "^[^;, ]+[,;]?", "", 0)
 		else
@@ -355,7 +357,7 @@ for .control to .numControlLines
 			endif
 			.pitchTargets$ = ""
 		endif
-		if .rateTargets$ <> ""
+		if .rateTargets$ <> "" and .rateTargets$ <> "0"
 			.rateTargetList$ [.numTargets] = replace_regex$(.rateTargets$, "^([^;, ]+).*$", "\1", 0)
 			.rateTargets$ = replace_regex$(.rateTargets$, "^[^;, ]+[,;]?", "", 0)
 		else
@@ -746,6 +748,9 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		.target_Pitch = .medianPitch
 	endif
 	if max(.target_Pitch, .medianPitch)/min(.target_Pitch, .medianPitch) > maximalPitchChange
+		# Issue warning
+		appendFileLine: "PseudonymizeSpeechLOG.log", "Pitch change factor too large: (", .target_Pitch, ", ", .medianPitch, ") > ", maximalPitchChange,". Limited change"
+		
 		if .target_Pitch > .medianPitch
 			.target_Pitch = .medianPitch * maximalPitchChange
 		else
@@ -757,6 +762,9 @@ procedure createPseudonymousSpeech .sourceSound .refData .dataRow .target_Phi .t
 		.target_Rate = .referenceArtRate
 	endif
 	if max(.target_Rate, .referenceArtRate)/min(.target_Rate, .referenceArtRate) > maximalRateChange
+		# Issue warning
+		appendFileLine: "PseudonymizeSpeechLOG.log", "Rate change factor too large: (", .target_Rate, ", ", .referenceArtRate, ") > ", maximalRateChange,". Limited change"
+
 		if .target_Rate > .referenceArtRate
 			.target_Rate = .referenceArtRate * maximalRateChange
 		else

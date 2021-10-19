@@ -66,7 +66,7 @@ ManPagesTextFile
 <list_item> "$$Target Pitch: 110, 145, 175$"
 <list_item> "$$Target Rate: 3.8, 4.0, 4.2$"
 <normal> "These values are used in turn. If several fields have lists, they are used in parallel, that is, the first of each list (510, 110, 3.8), then the second of each list (550, 145, 4.0), then the third (585, 175, 4.2), etc. If one list ends before the others, the last value is reused. A value of ""0"" for any of these indicates that the corresponding reference value, \fi, median F0, or articulation rate, will be used, i.e., no change. "
-<normal> "If a %%label% of a speaker is entered in the %%Target Phi% field, its profile will be copied into this and the other fields, including the %%Randomization% fields. Effectively, the system will convert the input speech using the parameters of the target speaker. It is best to empty all the other fields in this case. "
+<normal> "If a %%label% of a speaker is entered in the %%Target Phi% field, its profile will be copied into this and the other fields, including the %%Randomization% fields. Effectively, the system will convert the input speech using the parameters of the target speaker. The %%Pitch% and %%Rate% fields should be empty (or 0) in this case. "
 
 <normal> "The label %%Random% will select a random speaker from the speaker profiles, different from the one that is converted. The labels %%RandomFemale% and %%RandomMale% work like %%Random%, but they select random female or male speakers. The labels %%RandomSgender% and %%RandomXgender% select a random target speaker profile of the same, respectively, different gender as the source speaker. If no gender information is available, these latter labels work like %%Random%. These labels can be followed by a ""="" and a corpus name to limit selection to a single corpus. For example, %%RandomSgender=ASVspoof2019% will limit the selection to speakers of the same gender from the corpus called %%ASVspoof2019%." 
 
@@ -80,6 +80,8 @@ ManPagesTextFile
 <normal> "The differences between the source and the target \fi's, both \fi, the bands \fi__1_-\fi__5_, and the intensity bands \fi__0_-\fi__5_, can be exaggerated, or diminished, by adding a multiplication factor between []-brackets to the target. For instance, when selecting random cross-gender targets, %%RandomXgender[1.5]=ASVspoof2019%, the effective target will be: "
 <normal> "\fi__effective_ = \fi__target_ + 1.5\.c(\fi__target_ - \fi__source_). "
 <normal> "The exaggeration factor between the []-brackets can also be negative. "
+<normal> "Note: The size of the changes in pitch and rate are maximized to prevent deterioration of the sound quality. This can be undone by setting the %%maximalPitchChange% and 
+%%maximalRateChange% variables in the script to a high value."
 
 <entry> "Examples"
 <normal> "Two examples are available:"
